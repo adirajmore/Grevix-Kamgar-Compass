@@ -1,0 +1,76 @@
+{
+  "name": "Women's Livelihoods Project",
+  "state": "MH",
+  "grantStartDate": "2026-10-01",
+  "grantDurationMonths": 18,
+  "grantAmount": 18000000,
+  "complianceAllowance": 0,
+  "poshMonthlyCostPerWorker": 0,
+  "roles": [
+    {
+      "id": "project-coordinator",
+      "title": "Project coordinator",
+      "headcount": 1,
+      "monthlySalary": 42000,
+      "genderMix": "women",
+      "contractType": "employee_fixed",
+      "weeklyHours": 40,
+      "regularPayment": true,
+      "controlledByOrganization": true,
+      "startMonth": 1,
+      "endMonth": 18
+    },
+    {
+      "id": "field-coordinator",
+      "title": "Field coordinator",
+      "headcount": 3,
+      "monthlySalary": 26000,
+      "genderMix": "women",
+      "contractType": "employee_fixed",
+      "weeklyHours": 40,
+      "regularPayment": true,
+      "controlledByOrganization": true,
+      "startMonth": 1,
+      "endMonth": 18
+    },
+    {
+      "id": "livelihood-trainer",
+      "title": "Livelihood trainer",
+      "headcount": 5,
+      "monthlySalary": 18000,
+      "genderMix": "women",
+      "contractType": "employee_fixed",
+      "weeklyHours": 35,
+      "regularPayment": true,
+      "controlledByOrganization": true,
+      "startMonth": 1,
+      "endMonth": 18
+    },
+    {
+      "id": "accounts-assistant",
+      "title": "Accounts assistant",
+      "headcount": 1,
+      "monthlySalary": 28000,
+      "genderMix": "mixed",
+      "contractType": "employee_permanent",
+      "weeklyHours": 40,
+      "regularPayment": true,
+      "controlledByOrganization": true,
+      "startMonth": 1,
+      "endMonth": 18
+    },
+    {
+      "id": "community-stipend-volunteer",
+      "title": "Community volunteer with regular stipend",
+      "headcount": 2,
+      "monthlySalary": 8000,
+      "genderMix": "women",
+      "contractType": "volunteer_stipend",
+      "weeklyHours": 24,
+      "regularPayment": true,
+      "controlledByOrganization": true,
+      "startMonth": 1,
+      "endMonth": 18
+    }
+  ]
+}

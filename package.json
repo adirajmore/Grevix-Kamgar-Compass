@@ -1,0 +1,14 @@
+{
+  "name": "kamgar-compass",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "test": "node --test",
+    "lint": "eslint . --max-warnings=0 && prettier --check ."
+  },
+  "devDependencies": {
+    "eslint": "8.57.1",
+    "prettier": "3.3.3"
+  }
+}

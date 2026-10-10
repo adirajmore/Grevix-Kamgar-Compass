@@ -1,0 +1,697 @@
+{
+  "app.name": { "text": "Kamgar Compass", "reviewed": false },
+  "welcome.ariaLabel": {
+    "text": "Kamgar Compass मध्ये आपले स्वागत आहे",
+    "reviewed": false
+  },
+  "welcome.eyebrow": {
+    "text": "काम आणि निधीची स्पष्ट माहिती",
+    "reviewed": false
+  },
+  "welcome.headline": {
+    "text": "प्रत्येक अनुदान कामाचा खर्च देते. कामगारांच्या हक्कांचा खर्च कोण देणार?",
+    "reviewed": false
+  },
+  "welcome.description": {
+    "text": "संस्था आणि स्वयंसेवी संस्था कोणते कामगारविषयक नियम लागू होऊ शकतात आणि लोकांना कामावर ठेवण्याचा लपलेला खर्च काय आहे हे पाहू शकतात. कर्मचाऱ्यांच्या खऱ्या खर्चापैकी किती रक्कम बजेटमध्ये नाही आणि निधी संपल्यावर काय होऊ शकते हे समजून घ्या.",
+    "reviewed": false
+  },
+  "welcome.featuresLabel": {
+    "text": "Kamgar Compass कशी मदत करते",
+    "reviewed": false
+  },
+  "welcome.featureCost": { "text": "खरा खर्च पाहा", "reviewed": false },
+  "welcome.featureCliff": {
+    "text": "अनुदान संपल्यावर काय होईल ते पाहा",
+    "reviewed": false
+  },
+  "welcome.featureLanguages": {
+    "text": "प्रत्येक कामगाराच्या भाषेत बोला",
+    "reviewed": false
+  },
+  "welcome.enter": {
+    "text": "Kamgar Compass उघडा",
+    "reviewed": false
+  },
+  "welcome.skip": { "text": "ओळख करून देणे वगळा", "reviewed": false },
+  "welcome.disclaimer": {
+    "text": "हे फक्त माहितीसाठी आहे. कायदेशीर सल्ला नाही.",
+    "reviewed": false
+  },
+  "welcome.storageError": {
+    "text": "या ब्राउझरमध्ये या सत्रासाठी तुमची निवड जतन झाली नाही. पृष्ठ पुन्हा उघडल्यास ओळख पुन्हा दिसू शकते.",
+    "reviewed": false
+  },
+  "welcome.funding": { "text": "अनुदानाचा निधी", "reviewed": false },
+  "welcome.grantEnd": { "text": "निधी संपतो", "reviewed": false },
+  "welcome.hiddenCost": {
+    "text": "लपलेला खर्च: EPF, ESI, ग्रॅच्युइटी, POSH",
+    "reviewed": false
+  },
+  "welcome.about": { "text": "माहिती", "reviewed": false },
+  "language.label": { "text": "भाषा", "reviewed": false },
+  "language.en": { "text": "English", "reviewed": false },
+  "language.hi": { "text": "हिन्दी", "reviewed": false },
+  "language.mr": { "text": "मराठी", "reviewed": false },
+  "nav.worker": { "text": "कामगारांसाठी", "reviewed": false },
+  "nav.funder": { "text": "निधी देणाऱ्यांसाठी", "reviewed": false },
+  "worker.eyebrow": { "text": "आपले काम समजून घ्या", "reviewed": false },
+  "worker.title": {
+    "text": "आपल्या कामाशी संबंधित नियम समजून घ्या",
+    "reviewed": false
+  },
+  "worker.intro": {
+    "text": "कामाचे नियम आणि नोकरीशी संबंधित खर्च समजून घेण्यासाठी ही एक सोपी सुरुवात आहे. कामगारांसाठीची माहिती आपल्या भाषेत वाचा.",
+    "reviewed": false
+  },
+  "worker.sectionTitle": { "text": "नियमांची सोपी माहिती", "reviewed": false },
+  "worker.sectionIntro": {
+    "text": "ही थोडक्यात माहिती सुरुवात करण्यासाठी आहे. कोणते नियम लागू होतील हे तुमचे काम, नियोक्ता आणि सध्या लागू असलेल्या नियमांवर अवलंबून असू शकते.",
+    "reviewed": false
+  },
+  "worker.sourceLabel": { "text": "स्रोत", "reviewed": false },
+  "funder.eyebrow": { "text": "संस्थांसाठी", "reviewed": false },
+  "funder.title": {
+    "text": "लोकांना कामावर ठेवण्याचा संपूर्ण खर्च ठरवा",
+    "reviewed": false
+  },
+  "funder.intro": {
+    "text": "कर्मचाऱ्यांच्या बजेटबद्दल चर्चा सुरू करण्यासाठी या पॅकचा वापर करा. येथे निवडलेली भाषा कामगारांच्या पानाच्या भाषेपेक्षा वेगळी असू शकते.",
+    "reviewed": false
+  },
+  "funder.languageLabel": {
+    "text": "निधी देणाऱ्यांच्या पॅकची भाषा",
+    "reviewed": false
+  },
+  "funder.sectionTitle": {
+    "text": "जबाबदारीने सुरुवात करा",
+    "reviewed": false
+  },
+  "funder.sectionIntro": {
+    "text": "बजेट ठरवण्यापूर्वी कोणते नियम लागू होऊ शकतात ते शोधा आणि पात्र सल्लागाराकडून तपशीलांची खात्री करून घ्या.",
+    "reviewed": false
+  },
+  "funder.cardTitle": {
+    "text": "कर्मचाऱ्यांच्या संपूर्ण खर्चाचे बजेट करा",
+    "reviewed": false
+  },
+  "funder.cardBody": {
+    "text": "पगारासोबत लागू होणारे कामाशी संबंधित अंशदान किंवा लाभ यांचाही समावेश करा. आकडे अंतिम करण्यापूर्वी प्रत्येक कर्मचारी आणि ठिकाणासाठी सध्या लागू असलेले नियम तपासा.",
+    "reviewed": false
+  },
+  "notice.disclaimer": {
+    "text": "ही फक्त सामान्य माहिती आहे. या मार्गदर्शकातून एखाद्या व्यक्तीला किंवा संस्थेला कोणते कायदे लागू होतात हे ठरत नाही, वैधानिक अंशदानाची गणना होत नाही आणि ही कायदेशीर सल्ल्याची जागा घेत नाही.",
+    "reviewed": false
+  },
+  "app.tagline": {
+    "text": "अनुदानात कर्मचाऱ्यांचे कोणते खर्च समाविष्ट नाहीत ते पाहा.",
+    "reviewed": false
+  },
+  "app.heroNote": {
+    "text": "भारतीय स्वयंसेवी संस्थांसाठी नियोजनाचे अंदाजित साधन. कायदेशीर मूल्यांची पडताळणी झालेली नाही; निर्णयापूर्वी खात्री करा.",
+    "reviewed": false
+  },
+  "app.trySample": { "text": "नमुना संस्था भरा", "reviewed": false },
+  "nav.ngo": { "text": "संस्थेसाठी", "reviewed": false },
+  "nav.rules": { "text": "नियम", "reviewed": false },
+  "language.funder": {
+    "text": "निधी देणाऱ्यांच्या पॅकची भाषा",
+    "reviewed": false
+  },
+  "form.title": { "text": "प्रकल्प आणि कर्मचारी माहिती", "reviewed": false },
+  "form.projectName": { "text": "प्रकल्पाचे नाव", "reviewed": false },
+  "form.state": { "text": "राज्य किंवा केंद्रशासित प्रदेश", "reviewed": false },
+  "form.grantStart": {
+    "text": "अनुदान सुरू होण्याची तारीख",
+    "reviewed": false
+  },
+  "form.duration": { "text": "अनुदानाचा कालावधी (महिने)", "reviewed": false },
+  "form.grantAmount": {
+    "text": "एकूण अनुदान रक्कम",
+    "reviewed": false
+  },
+  "form.allowance": {
+    "text": "अनुपालनासाठी राखून ठेवलेली अनुदान रक्कम",
+    "reviewed": false
+  },
+  "form.rolesTitle": { "text": "प्रकल्पातील कामे", "reviewed": false },
+  "form.addRole": { "text": "काम जोडा", "reviewed": false },
+  "form.removeRole": { "text": "काम काढा", "reviewed": false },
+  "form.sampleLoaded": { "text": "नमुना प्रकल्प भरला आहे.", "reviewed": false },
+  "role.title": { "text": "कामाचे नाव", "reviewed": false },
+  "role.headcount": { "text": "या कामातील लोकांची संख्या", "reviewed": false },
+  "role.salary": { "text": "एकूण मासिक वेतन (₹)", "reviewed": false },
+  "role.gender": { "text": "लिंग मिश्रण (ऐच्छिक)", "reviewed": false },
+  "role.contract": { "text": "कामाचा करार", "reviewed": false },
+  "role.hours": { "text": "दर आठवड्याचे तास", "reviewed": false },
+  "role.regularPayment": {
+    "text": "नियमित पैसे किंवा मानधन मिळते का?",
+    "reviewed": false
+  },
+  "role.control": {
+    "text": "संस्था कामाचे निर्देश देते का?",
+    "reviewed": false
+  },
+  "role.startMonth": { "text": "सुरू होण्याचा महिना", "reviewed": false },
+  "role.endMonth": { "text": "शेवटचा महिना", "reviewed": false },
+  "role.skillCategory": {
+    "text": "किमान वेतनासाठी कौशल्य श्रेणी",
+    "reviewed": false
+  },
+  "role.skillCategoryHelp": {
+    "text": "ऐच्छिक. राज्याच्या वेतनाची तुलना करण्यासाठी पडताळलेली श्रेणी आणि दर हवा.",
+    "reviewed": false
+  },
+  "role.whatIfSalary": { "text": "वेतन बदलून पाहा", "reviewed": false },
+  "role.whatIfHeadcount": {
+    "text": "लोकांची संख्या बदलून पाहा",
+    "reviewed": false
+  },
+  "role.whatIfDuration": {
+    "text": "अनुदानाचा कालावधी बदलून पाहा",
+    "reviewed": false
+  },
+  "contract.employeeFixed": {
+    "text": "कर्मचारी — मुदतबद्ध",
+    "reviewed": false
+  },
+  "contract.employeePermanent": {
+    "text": "कर्मचारी — कायम",
+    "reviewed": false
+  },
+  "contract.consultant": { "text": "सल्लागार", "reviewed": false },
+  "contract.volunteerStipend": {
+    "text": "स्वयंसेवक — मानधन",
+    "reviewed": false
+  },
+  "gender.unspecified": { "text": "नमूद केलेले नाही", "reviewed": false },
+  "gender.women": { "text": "महिला", "reviewed": false },
+  "gender.men": { "text": "पुरुष", "reviewed": false },
+  "gender.mixed": { "text": "मिश्र", "reviewed": false },
+  "dashboard.title": { "text": "प्रकल्पाचे अंदाजित निकाल", "reviewed": false },
+  "dashboard.estimateNotice": {
+    "text": "फक्त अंदाज — एक किंवा अधिक कायदेशीर दर किंवा मर्यादा पडताळायच्या आहेत. हे आकडे कायदेशीर निर्णय समजू नका.",
+    "reviewed": false
+  },
+  "dashboard.gapScore": {
+    "text": "अनुपालन खर्चातील अंदाजित तूट",
+    "reviewed": false
+  },
+  "dashboard.underfunded": {
+    "text": "या बजेटमध्ये कर्मचाऱ्यांच्या खर्चासाठी {percentage}% तूट आहे (अंदाजित तूट {amount}).",
+    "reviewed": false
+  },
+  "dashboard.surplus": {
+    "text": "दिलेली रक्कम या अंदाजातील खर्चापेक्षा {amount} जास्त आहे.",
+    "reviewed": false
+  },
+  "dashboard.noSalary": {
+    "text": "तूट टक्केवारी काढण्यासाठी सक्रिय पगारी काम जोडा.",
+    "reviewed": false
+  },
+  "dashboard.salaryCost": {
+    "text": "अनुदान काळातील वेतन खर्च",
+    "reviewed": false
+  },
+  "dashboard.employerCost": {
+    "text": "नियोक्त्याच्या खर्चाचा अंदाज",
+    "reviewed": false
+  },
+  "dashboard.trueCost": {
+    "text": "कर्मचाऱ्यांचा अंदाजित एकूण खर्च",
+    "reviewed": false
+  },
+  "dashboard.complianceGap": {
+    "text": "अनुपालनासाठी अंदाजित अपुरी रक्कम",
+    "reviewed": false
+  },
+  "dashboard.breakdown": {
+    "text": "नियोक्त्याच्या अंदाजित खर्चाची विभागणी",
+    "reviewed": false
+  },
+  "dashboard.noCosts": {
+    "text": "सध्या पडताळलेला किंवा अंदाजित नियोक्ता खर्च उपलब्ध नाही.",
+    "reviewed": false
+  },
+  "dashboard.roleBreakdown": {
+    "text": "प्रत्येक कामाचा खर्च",
+    "reviewed": false
+  },
+  "dashboard.role": { "text": "काम", "reviewed": false },
+  "dashboard.salaryTotal": { "text": "एकूण वेतन", "reviewed": false },
+  "dashboard.employerTotal": { "text": "अंदाजित देणी", "reviewed": false },
+  "dashboard.staffTotal": {
+    "text": "कर्मचाऱ्यांचा अंदाजित खर्च",
+    "reviewed": false
+  },
+  "dashboard.details": { "text": "नियमांचे निकाल", "reviewed": false },
+  "dashboard.month": { "text": "अनुदानाचा महिना", "reviewed": false },
+  "dashboard.cliff": { "text": "अनुदान संपण्याचा अंदाज", "reviewed": false },
+  "dashboard.cliffDescription": {
+    "text": "अनुदानाचे महिने आणि ते संपल्यानंतरचे तीन महिने पाहण्यासाठी सरकपट्टी हलवा.",
+    "reviewed": false
+  },
+  "dashboard.cliffEnd": {
+    "text": "महिना {month} नंतर अनुदान संपेल.",
+    "reviewed": false
+  },
+  "dashboard.activeWorkers": {
+    "text": "या महिन्यात अनुदानातील लोक: {count}.",
+    "reviewed": false
+  },
+  "dashboard.coverageEnd": {
+    "text": "संभाव्य संरक्षण संपण्याच्या तपासणीत {count} लोक आहेत. प्रत्येकाची पात्रता तपासा.",
+    "reviewed": false
+  },
+  "dashboard.liability": {
+    "text": "ग्रॅच्युइटी जमा होण्याचा अंदाज: {amount}.",
+    "reviewed": false
+  },
+  "dashboard.liabilityUnfunded": {
+    "text": "दिलेली रक्कम वजा केल्यानंतर अंदाजित बाकी देयक: {amount}.",
+    "reviewed": false
+  },
+  "dashboard.noRoles": {
+    "text": "अजून कोणतेही काम नोंदवलेले नाही.",
+    "reviewed": false
+  },
+  "dashboard.monthlyTimeline": {
+    "text": "अनुदान महिन्यांची वेळरेषा",
+    "reviewed": false
+  },
+  "rule.needsVerification": { "text": "पडताळणी आवश्यक", "reviewed": false },
+  "rule.pending": { "text": "माहिती अपुरी", "reviewed": false },
+  "rule.notApplicable": { "text": "या अंदाजात लागू नाही", "reviewed": false },
+  "rule.scenario": { "text": "अंदाजित मूल्य", "reviewed": false },
+  "rule.source": { "text": "कायद्याचा स्रोत", "reviewed": false },
+  "rule.section": { "text": "कलम किंवा स्रोत", "reviewed": false },
+  "rule.lastVerified": { "text": "शेवटची पडताळणी", "reviewed": false },
+  "rule.confidence": { "text": "विश्वास पातळी", "reviewed": false },
+  "rule.reason": { "text": "कारण", "reviewed": false },
+  "rule.professional": {
+    "text": "या बाबतीत तज्ज्ञांचा सल्ला घ्या",
+    "reviewed": false
+  },
+  "rule.cost": { "text": "मासिक खर्चाचा अंदाज", "reviewed": false },
+  "rule.noCost": { "text": "खर्च मोजलेला नाही", "reviewed": false },
+  "rule.classificationScore": {
+    "text": "कामाचे संकेत: {total} पैकी {count}",
+    "reviewed": false
+  },
+  "reason.contractType": {
+    "text": "या कराराचा प्रकार या नियमाच्या अंदाजात समाविष्ट नाही.",
+    "reviewed": false
+  },
+  "reason.missingThreshold": {
+    "text": "आवश्यक मर्यादा दिलेली नाही.",
+    "reviewed": false
+  },
+  "reason.headcountBelow": {
+    "text": "या अंदाजातील लोकांची संख्या अपडताळलेल्या प्राथमिक मर्यादेपेक्षा कमी आहे.",
+    "reviewed": false
+  },
+  "reason.wageAbove": {
+    "text": "या अंदाजातील वेतन अपडताळलेल्या वेतनमर्यादेपेक्षा जास्त आहे.",
+    "reviewed": false
+  },
+  "reason.missingRate": {
+    "text": "अंशदानाचा अंदाजित दर दिलेला नाही.",
+    "reviewed": false
+  },
+  "reason.scenarioEstimate": {
+    "text": "हा अंदाज तात्पुरता दर आणि पात्रतेवर आधारित आहे; लागू होणे आणि मूल्ये तपासा.",
+    "reviewed": false
+  },
+  "reason.gratuityPotentiallyEligible": {
+    "text": "सेवाकाळ अंदाजित तपासणी कालावधीपर्यंत पोहोचला; हा पात्रतेचा निर्णय नाही.",
+    "reviewed": false
+  },
+  "reason.gratuityAccrual": {
+    "text": "मासिक जमा अंदाज दाखवला आहे; पात्रता आणि देयक तपासणे आवश्यक आहे.",
+    "reviewed": false
+  },
+  "reason.minimumWageMissing": {
+    "text": "राज्याचा पडताळलेला दर आणि जुळणारी कौशल्य श्रेणी उपलब्ध नाही.",
+    "reviewed": false
+  },
+  "reason.minimumWageBelow": {
+    "text": "वेतन दिलेल्या अपडताळलेल्या राज्य दरापेक्षा कमी आहे.",
+    "reviewed": false
+  },
+  "reason.minimumWageMet": {
+    "text": "वेतन दिलेल्या अपडताळलेल्या राज्य दराएवढे किंवा त्यापेक्षा जास्त आहे.",
+    "reviewed": false
+  },
+  "reason.poshScreening": {
+    "text": "प्रकल्पातील लोकांची संख्या प्राथमिक तपासणी मर्यादेपर्यंत पोहोचली; प्रत्यक्ष कामाचे ठिकाण आणि कायदेशीर गरजा तपासा.",
+    "reviewed": false
+  },
+  "reason.classificationSignals": {
+    "text": "हे फक्त कामाच्या पद्धतीचे संकेत आहेत; ते कायदेशीर वर्गीकरण ठरवत नाहीत.",
+    "reviewed": false
+  },
+  "view.workerTitle": { "text": "तुमचे काम आणि संरक्षण", "reviewed": false },
+  "view.workerIntro": {
+    "text": "संभाव्य संरक्षण आणि विचारायचे प्रश्न पाहण्यासाठी तुमचे काम निवडा. हे संकेत कायदेशीर निर्णय नाहीत.",
+    "reviewed": false
+  },
+  "worker.selectRole": { "text": "तुमचे काम निवडा", "reviewed": false },
+  "worker.possibleProtections": {
+    "text": "ज्या संरक्षणांबद्दल विचारावे",
+    "reviewed": false
+  },
+  "worker.askEmployer": {
+    "text": "तुम्ही विचारू शकता: “माझ्या कामाला कोणते संरक्षण लागू आहे आणि सध्याचे लेखी नियम कुठे वाचता येतील?”",
+    "reviewed": false
+  },
+  "worker.missingInformation": {
+    "text": "सध्याच्या प्रकल्प माहितीतून काही संरक्षणांची खात्री होत नाही. संस्थेला किंवा पात्र सल्लागाराला विचारा.",
+    "reviewed": false
+  },
+  "worker.grantEnd": {
+    "text": "अनुदान संपल्यावर या कामासाठीचा निधी थांबू शकतो. शेवटची तारीख, बाकी रक्कम आणि नोंदी किंवा मदत कशी मिळेल ते विचारा.",
+    "reviewed": false
+  },
+  "view.rulesTitle": { "text": "नियम आणि गृहीतके", "reviewed": false },
+  "view.rulesIntro": {
+    "text": "गणनेत वापरलेला प्रत्येक नियम, तात्पुरते मूल्य, स्रोत आणि पडताळणीची स्थिती पाहा.",
+    "reviewed": false
+  },
+  "view.funderTitle": { "text": "निधी देणाऱ्यांचा पॅक", "reviewed": false },
+  "view.funderIntro": {
+    "text": "कर्मचारी खर्च आणि तपासायचे कायदेशीर स्रोत स्पष्टपणे दाखवणारी अंदाजित बजेट नोंद.",
+    "reviewed": false
+  },
+  "funder.copy": { "text": "बजेट नोंद प्रत करा", "reviewed": false },
+  "funder.print": { "text": "छापा / PDF म्हणून जतन करा", "reviewed": false },
+  "funder.copied": { "text": "बजेट नोंद प्रत झाली.", "reviewed": false },
+  "funder.copyError": {
+    "text": "नोंद प्रत करता आली नाही. खालील मजकूर निवडून प्रत करा.",
+    "reviewed": false
+  },
+  "funder.recommendedAllowance": {
+    "text": "वेतनाच्या तुलनेत नियोक्ता खर्चाचा अंदाज",
+    "reviewed": false
+  },
+  "funder.justification": {
+    "text": "या अंदाजात तपासणीसाठी संभाव्य नियोक्ता खर्च दाखवले आहेत. स्रोत आणि सध्याची मूल्ये तपासेपर्यंत कोणताही खर्च कायद्याने बंधनकारक समजू नये.",
+    "reviewed": false
+  },
+  "funder.copyNote": {
+    "text": "प्रत करता येणारी बजेट नोंद",
+    "reviewed": false
+  },
+  "validation.project": { "text": "प्रकल्पाची माहिती भरा.", "reviewed": false },
+  "validation.projectName": {
+    "text": "प्रकल्पाचे नाव लिहा (जास्तीत जास्त 120 अक्षरे).",
+    "reviewed": false
+  },
+  "validation.state": {
+    "text": "यादीतील राज्य किंवा केंद्रशासित प्रदेश निवडा.",
+    "reviewed": false
+  },
+  "validation.startDate": {
+    "text": "YYYY-MM-DD या स्वरूपात खरी तारीख द्या.",
+    "reviewed": false
+  },
+  "validation.duration": {
+    "text": "1 ते 60 पूर्ण महिन्यांची संख्या द्या.",
+    "reviewed": false
+  },
+  "validation.grantAmount": {
+    "text": "रुपयांत शून्य किंवा त्याहून अधिक पूर्ण रक्कम द्या.",
+    "reviewed": false
+  },
+  "validation.allowance": {
+    "text": "रुपयांत शून्य किंवा त्याहून अधिक पूर्ण रक्कम द्या.",
+    "reviewed": false
+  },
+  "validation.roles": {
+    "text": "कामांची यादी योग्य असावी.",
+    "reviewed": false
+  },
+  "validation.roleTitle": {
+    "text": "कामाचे नाव लिहा (जास्तीत जास्त 100 अक्षरे).",
+    "reviewed": false
+  },
+  "validation.headcount": {
+    "text": "1 ते 1,000 मधील पूर्ण संख्या द्या.",
+    "reviewed": false
+  },
+  "validation.salary": {
+    "text": "मासिक वेतन रुपयांत शून्य किंवा त्याहून अधिक पूर्ण रक्कम असावी.",
+    "reviewed": false
+  },
+  "validation.contract": { "text": "कराराचा प्रकार निवडा.", "reviewed": false },
+  "validation.gender": {
+    "text": "यादीतील लिंग पर्याय निवडा.",
+    "reviewed": false
+  },
+  "validation.hours": {
+    "text": "दर आठवड्याला 0 ते 168 तास द्या.",
+    "reviewed": false
+  },
+  "validation.regularPayment": {
+    "text": "नियमित पैसे मिळतात का ते निवडा.",
+    "reviewed": false
+  },
+  "validation.control": {
+    "text": "संस्था कामाचे निर्देश देते का ते निवडा.",
+    "reviewed": false
+  },
+  "validation.startMonth": {
+    "text": "अनुदान संपल्यानंतरच्या एका महिन्यापर्यंतचा महिना द्या.",
+    "reviewed": false
+  },
+  "validation.endMonth": {
+    "text": "शेवटचा महिना सुरूवातीच्या महिन्यापासून अनुदान किंवा त्यानंतरच्या एका महिन्यापर्यंत असावा.",
+    "reviewed": false
+  },
+  "error.title": {
+    "text": "कामगार कम्पास प्रकल्पाची माहिती उघडू शकले नाही.",
+    "reviewed": false
+  },
+  "error.rulesLoad": {
+    "text": "नियम किंवा नमुना प्रकल्प लोड झाला नाही.",
+    "reviewed": false
+  },
+  "error.localesLoad": {
+    "text": "भाषेच्या फाइल लोड झाल्या नाहीत.",
+    "reviewed": false
+  },
+  "error.localServer": {
+    "text": "प्रकल्प फोल्डरमध्ये `npx serve` चालवा किंवा प्रकाशित अॅप उघडा; index.html थेट file:// ने उघडू नका.",
+    "reviewed": false
+  },
+  "state.AN": { "text": "अंदमान आणि निकोबार बेटे", "reviewed": false },
+  "state.AP": { "text": "आंध्र प्रदेश", "reviewed": false },
+  "state.AR": { "text": "अरुणाचल प्रदेश", "reviewed": false },
+  "state.AS": { "text": "आसाम", "reviewed": false },
+  "state.BR": { "text": "बिहार", "reviewed": false },
+  "state.CH": { "text": "चंदीगड", "reviewed": false },
+  "state.CT": { "text": "छत्तीसगड", "reviewed": false },
+  "state.DN": {
+    "text": "दादरा आणि नगर हवेली व दमण आणि दीव",
+    "reviewed": false
+  },
+  "state.DL": { "text": "दिल्ली", "reviewed": false },
+  "state.GA": { "text": "गोवा", "reviewed": false },
+  "state.GJ": { "text": "गुजरात", "reviewed": false },
+  "state.HR": { "text": "हरियाणा", "reviewed": false },
+  "state.HP": { "text": "हिमाचल प्रदेश", "reviewed": false },
+  "state.JK": { "text": "जम्मू आणि काश्मीर", "reviewed": false },
+  "state.JH": { "text": "झारखंड", "reviewed": false },
+  "state.KA": { "text": "कर्नाटक", "reviewed": false },
+  "state.KL": { "text": "केरळ", "reviewed": false },
+  "state.LA": { "text": "लडाख", "reviewed": false },
+  "state.LD": { "text": "लक्षद्वीप", "reviewed": false },
+  "state.MP": { "text": "मध्य प्रदेश", "reviewed": false },
+  "state.MH": { "text": "महाराष्ट्र", "reviewed": false },
+  "state.MN": { "text": "मणिपूर", "reviewed": false },
+  "state.ML": { "text": "मेघालय", "reviewed": false },
+  "state.MZ": { "text": "मिझोराम", "reviewed": false },
+  "state.NL": { "text": "नागालँड", "reviewed": false },
+  "state.OD": { "text": "ओडिशा", "reviewed": false },
+  "state.PY": { "text": "पुदुच्चेरी", "reviewed": false },
+  "state.PB": { "text": "पंजाब", "reviewed": false },
+  "state.RJ": { "text": "राजस्थान", "reviewed": false },
+  "state.SK": { "text": "सिक्कीम", "reviewed": false },
+  "state.TN": { "text": "तामिळनाडू", "reviewed": false },
+  "state.TS": { "text": "तेलंगणा", "reviewed": false },
+  "state.TR": { "text": "त्रिपुरा", "reviewed": false },
+  "state.UP": { "text": "उत्तर प्रदेश", "reviewed": false },
+  "state.UT": { "text": "उत्तराखंड", "reviewed": false },
+  "state.WB": { "text": "पश्चिम बंगाल", "reviewed": false },
+  "app.heroEyebrow": { "text": "अनुदान ते वेतन नियोजन", "reviewed": false },
+  "app.inputsEyebrow": { "text": "प्रकल्प माहिती", "reviewed": false },
+  "app.resultsEyebrow": { "text": "नियोजन डॅशबोर्ड", "reviewed": false },
+  "form.optional": { "text": "(ऐच्छिक)", "reviewed": false },
+  "form.selectState": { "text": "राज्य निवडा", "reviewed": false },
+  "dashboard.fixInputs": {
+    "text": "निकाल पाहण्यासाठी दाखवलेली माहिती दुरुस्त करा.",
+    "reviewed": false
+  },
+  "common.yes": { "text": "होय", "reviewed": false },
+  "common.no": { "text": "नाही", "reviewed": false },
+  "confidence.high": { "text": "उच्च", "reviewed": false },
+  "confidence.medium": { "text": "मध्यम", "reviewed": false },
+  "confidence.low": { "text": "कमी", "reviewed": false },
+  "rules.thresholds": { "text": "अंदाजातील मूल्ये", "reviewed": false },
+  "rules.noThreshold": {
+    "text": "संख्यात्मक मर्यादा दिलेली नाही.",
+    "reviewed": false
+  },
+  "ruleField.minimum_headcount": {
+    "text": "किमान लोकसंख्या",
+    "reviewed": false
+  },
+  "ruleField.contract_types": {
+    "text": "समाविष्ट करार प्रकार",
+    "reviewed": false
+  },
+  "ruleField.monthly_wage_at_most": {
+    "text": "मासिक वेतनमर्यादा",
+    "reviewed": false
+  },
+  "ruleField.screening_headcount": {
+    "text": "प्राथमिक तपासणीतील लोकसंख्या",
+    "reviewed": false
+  },
+  "ruleField.wage_ceiling_monthly": {
+    "text": "अंशदानासाठी वेतनमर्यादा",
+    "reviewed": false
+  },
+  "ruleField.rate_basis_points": {
+    "text": "अंशदान दर (आधार अंक)",
+    "reviewed": false
+  },
+  "ruleField.wage_basis": { "text": "वेतनाचा आधार", "reviewed": false },
+  "ruleField.fixed_term_eligibility_months": {
+    "text": "मुदतबद्ध कामासाठी तपासणी महिने",
+    "reviewed": false
+  },
+  "ruleField.permanent_eligibility_months": {
+    "text": "कायम कामासाठी तपासणी महिने",
+    "reviewed": false
+  },
+  "ruleField.type": { "text": "गणनेचा प्रकार", "reviewed": false },
+  "ruleField.signals": { "text": "संकेत", "reviewed": false },
+  "ruleField.calculation.rate_basis_points": {
+    "text": "अंशदान दर (आधार अंक)",
+    "reviewed": false
+  },
+  "ruleField.calculation.wage_ceiling_monthly": {
+    "text": "अंशदानासाठी वेतनमर्यादा",
+    "reviewed": false
+  },
+  "ruleField.calculation.fixed_term_eligibility_months": {
+    "text": "मुदतबद्ध कामासाठी तपासणी महिने",
+    "reviewed": false
+  },
+  "ruleField.calculation.permanent_eligibility_months": {
+    "text": "कायम कामासाठी तपासणी महिने",
+    "reviewed": false
+  },
+  "ruleField.calculation.signals.hours_at_least_weekly": {
+    "text": "आठवड्याच्या तासांची प्राथमिक तपासणी मर्यादा",
+    "reviewed": false
+  },
+  "ruleField.calculation.signals.duration_at_least_months": {
+    "text": "सेवाकाळाची प्राथमिक तपासणी मर्यादा",
+    "reviewed": false
+  },
+  "ruleCalculation.percent_of_wage": {
+    "text": "वेतनाची टक्केवारी",
+    "reviewed": false
+  },
+  "ruleCalculation.state_minimum_wage_check": {
+    "text": "राज्याच्या किमान वेतनाची तुलना",
+    "reviewed": false
+  },
+  "ruleCalculation.screening_only": {
+    "text": "फक्त प्राथमिक तपासणी",
+    "reviewed": false
+  },
+  "ruleCalculation.indicator_count": {
+    "text": "कामाच्या पद्धतीचे संकेत मोजा",
+    "reviewed": false
+  },
+  "ruleWageBasis.capped_at_ceiling": {
+    "text": "अंदाजित मर्यादेपर्यंत",
+    "reviewed": false
+  },
+  "ruleWageBasis.full_wage": {
+    "text": "पूर्ण अंदाजित वेतन",
+    "reviewed": false
+  },
+  "ruleWageBasis.gross_monthly_salary": {
+    "text": "एकूण मासिक वेतन",
+    "reviewed": false
+  },
+  "ruleName.epf_employer": {
+    "text": "ईपीएफमधील नियोक्त्याचे अंशदान",
+    "reviewed": false
+  },
+  "ruleName.esi_employer": {
+    "text": "ईएसआयमधील नियोक्त्याचे अंशदान",
+    "reviewed": false
+  },
+  "ruleName.gratuity_accrual": {
+    "text": "ग्रॅच्युइटीचा अंदाजित संचय",
+    "reviewed": false
+  },
+  "ruleName.minimum_wage_check": {
+    "text": "राज्याच्या किमान वेतनाची तपासणी",
+    "reviewed": false
+  },
+  "ruleName.posh_internal_committee": {
+    "text": "पीओएसएच अंतर्गत समिती तपासणी",
+    "reviewed": false
+  },
+  "ruleName.worker_classification": {
+    "text": "कामगार वर्गीकरणाचे संकेत",
+    "reviewed": false
+  },
+  "language.storageError": {
+    "text": "या ब्राउझरमध्ये भाषेची निवड जतन करता आली नाही.",
+    "reviewed": false
+  },
+  "form.poshCost": {
+    "text": "पीओएसएच नियोजन खर्च प्रति व्यक्ती, दरमहा (₹)",
+    "reviewed": false
+  },
+  "dashboard.monthlySalary": {
+    "text": "या कामाचे मासिक वेतन",
+    "reviewed": false
+  },
+  "dashboard.monthlyEmployerCost": {
+    "text": "नियोक्त्याचा मासिक खर्च",
+    "reviewed": false
+  },
+  "dashboard.monthlyTotal": { "text": "अंदाजित मासिक एकूण", "reviewed": false },
+  "dashboard.budgetedCost": {
+    "text": "बजेटमधील कर्मचारी खर्च",
+    "reviewed": false
+  },
+  "dashboard.total": { "text": "एकूण", "reviewed": false },
+  "dashboard.protectionsStop": {
+    "text": "अनुदानानंतर तपासायची सामाजिक सुरक्षा: {protections}. हे प्राथमिक संकेत आहेत, निश्चित हक्क नाहीत.",
+    "reviewed": false
+  },
+  "validation.roleLimit": {
+    "text": "एका प्रकल्पात 100 किंवा त्यापेक्षा कमी कामे ठेवा.",
+    "reviewed": false
+  },
+  "worker.protectionsMissing": {
+    "text": "या अंदाजातून खात्री न होणारी संरक्षणे",
+    "reviewed": false
+  },
+  "dashboard.grantAmount": {
+    "text": "एकूण अनुदान रक्कम",
+    "reviewed": false
+  },
+  "dashboard.monthlyAt": {
+    "text": "महिना {month}",
+    "reviewed": false
+  }
+}
