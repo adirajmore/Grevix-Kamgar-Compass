@@ -197,6 +197,17 @@
     "text": "अनुपालन खर्चातील अंदाजित तूट",
     "reviewed": false
   },
+  "dashboard.gapRange": {
+    "text": "अनुपालन तूट गुणांची मर्यादा",
+    "reviewed": false
+  },
+  "dashboard.rangeLow": { "text": "कमी", "reviewed": false },
+  "dashboard.rangeExpected": { "text": "अपेक्षित", "reviewed": false },
+  "dashboard.rangeHigh": { "text": "जास्त", "reviewed": false },
+  "dashboard.rangeUnbounded": {
+    "text": "मर्यादा सांगता येत नाही",
+    "reviewed": false
+  },
   "dashboard.underfunded": {
     "text": "या बजेटमध्ये कर्मचाऱ्यांच्या खर्चासाठी {percentage}% तूट आहे (अंदाजित तूट {amount}).",
     "reviewed": false
@@ -247,6 +258,10 @@
   "dashboard.details": { "text": "नियमांचे निकाल", "reviewed": false },
   "dashboard.month": { "text": "अनुदानाचा महिना", "reviewed": false },
   "dashboard.cliff": { "text": "अनुदान संपण्याचा अंदाज", "reviewed": false },
+  "dashboard.cliffRange": {
+    "text": "अनुदान संपल्यावरच्या देणीची मर्यादा",
+    "reviewed": false
+  },
   "dashboard.cliffDescription": {
     "text": "अनुदानाचे महिने आणि ते संपल्यानंतरचे तीन महिने पाहण्यासाठी सरकपट्टी हलवा.",
     "reviewed": false
@@ -368,8 +383,223 @@
     "text": "सध्याच्या प्रकल्प माहितीतून काही संरक्षणांची खात्री होत नाही. संस्थेला किंवा पात्र सल्लागाराला विचारा.",
     "reviewed": false
   },
+  "worker.uncertain": {
+    "text": "हे आकडे अनिश्चित आहेत आणि सध्याच्या नियमांशी जुळतीलच असे नाही.",
+    "reviewed": false
+  },
+  "worker.confirmLocalOffice": {
+    "text": "तुमचे हक्क स्थानिक कामगार कार्यालय किंवा पात्र सल्लागाराकडून तपासा.",
+    "reviewed": false
+  },
   "worker.grantEnd": {
     "text": "अनुदान संपल्यावर या कामासाठीचा निधी थांबू शकतो. शेवटची तारीख, बाकी रक्कम आणि नोंदी किंवा मदत कशी मिळेल ते विचारा.",
+    "reviewed": false
+  },
+  "worker.rightsCardTitle": {
+    "text": "कामगार हक्क कार्ड",
+    "reviewed": false
+  },
+  "worker.rightsCardIntro": {
+    "text": "ही या कामासाठीची थोडक्यात माहिती आहे. प्रश्न विचारण्यासाठी वापरा; कायदेशीर हक्क ठरवण्यासाठी नाही.",
+    "reviewed": false
+  },
+  "worker.rightsPossible": {
+    "text": "तपासायची संरक्षणे",
+    "reviewed": false
+  },
+  "worker.rightsPossibleIntro": {
+    "text": "प्रकल्पाच्या अंदाजात ही संरक्षणे दिसली आहेत. त्यांची खात्री करणे आवश्यक आहे.",
+    "reviewed": false
+  },
+  "worker.rightsNotConfirmed": {
+    "text": "या अंदाजात खात्री झालेली नाही",
+    "reviewed": false
+  },
+  "worker.rightsNotConfirmedIntro": {
+    "text": "या बाबी अंदाजात दिसल्या नाहीत किंवा त्यांची माहिती उपलब्ध नाही. याचा अर्थ संरक्षण नाही किंवा लागू होत नाही असा नाही.",
+    "reviewed": false
+  },
+  "worker.rightsEmptyPossible": {
+    "text": "या अंदाजात खात्री करण्यासाठी कोणतेही संरक्षण दिसले नाही. यावरून कोणतेही संरक्षण लागू नाही असे सिद्ध होत नाही.",
+    "reviewed": false
+  },
+  "worker.rightsEmptyNotConfirmed": {
+    "text": "या कामासाठी नियमांची अतिरिक्त माहिती उपलब्ध नाही.",
+    "reviewed": false
+  },
+  "worker.rightsAskHeading": {
+    "text": "नियोक्त्याला काय विचारावे",
+    "reviewed": false
+  },
+  "worker.rightsGrantHeading": {
+    "text": "अनुदान संपल्यावर",
+    "reviewed": false
+  },
+  "worker.rightsRoleEnd": {
+    "text": "प्रकल्पानुसार हे काम अनुदानाच्या {month} व्या महिन्यापर्यंत आहे.",
+    "reviewed": false
+  },
+  "worker.rulesPackDate": {
+    "text": "नियम-पॅकची तारीख",
+    "reviewed": false
+  },
+  "worker.rightsPrint": {
+    "text": "हे कार्ड छापा",
+    "reviewed": false
+  },
+  "worker.rightsReadAloud": {
+    "text": "मोठ्याने वाचा",
+    "reviewed": false
+  },
+  "worker.rightsVoiceUnavailable": {
+    "text": "मोठ्याने वाचणे उपलब्ध नाही: या ब्राउझरमध्ये निवडलेल्या भाषेचा आवाज नाही.",
+    "reviewed": false
+  },
+  "worker.rightsSpeechError": {
+    "text": "ब्राउझर हे कार्ड मोठ्याने वाचू शकला नाही.",
+    "reviewed": false
+  },
+  "worker.rightsPrintError": {
+    "text": "हे कार्ड छापण्यासाठी उघडता आले नाही.",
+    "reviewed": false
+  },
+  "freshness.controls": {
+    "text": "नियम ताजेपणाची सेटिंग",
+    "reviewed": false
+  },
+  "freshness.limitedInformation": {
+    "text": "मला सध्याच्या कायद्यांची खात्री करता येत नाही",
+    "reviewed": false
+  },
+  "freshness.asOfDate": {
+    "text": "आजची तारीख (डिव्हाइसचे घड्याळ चुकीचे असल्यास बदला)",
+    "reviewed": false
+  },
+  "freshness.verifiedOnDate": {
+    "text": "मी हे नियम शेवटचे या तारखेला तपासले",
+    "reviewed": false
+  },
+  "freshness.banner.verified": {
+    "text": "नियमांची अलीकडे पडताळणी झाली",
+    "reviewed": false
+  },
+  "freshness.banner.aging": {
+    "text": "काही नियम जुने असू शकतात",
+    "reviewed": false
+  },
+  "freshness.banner.old": {
+    "text": "नियम जुने किंवा अपुष्ट आहेत",
+    "reviewed": false
+  },
+  "freshness.details": {
+    "text": "नियमांची ताजेपणाची माहिती पाहा",
+    "reviewed": false
+  },
+  "freshness.noRelevantRules": {
+    "text": "या परिस्थितीत तपासण्यासाठी लागू नियम उपलब्ध नाहीत.",
+    "reviewed": false
+  },
+  "freshness.unquantifiable": {
+    "text": "खर्चातील अनिश्चिततेची मर्यादा मोजता येत नाही",
+    "reviewed": false
+  },
+  "freshness.assumptionNotice": {
+    "text": "बदलाच्या टक्केवारी या ASSUMPTION - TO VERIFY म्हणून चिन्हांकित तात्पुरत्या कल्पना आहेत; कायदेशीर तथ्ये नाहीत.",
+    "reviewed": false
+  },
+  "freshness.invalidAsOfDate": {
+    "text": "नियम ताजे आहेत का हे मोजण्यासाठी योग्य तारीख भरा.",
+    "reviewed": false
+  },
+  "offline.working": {
+    "text": "ऑफलाइन काम सुरू आहे. अॅपमध्ये साठवलेला डेटा वापरला जात आहे.",
+    "reviewed": false
+  },
+  "offline.unavailable": {
+    "text": "ऑफलाइन कॅश सुरू होऊ शकला नाही. इंटरनेट जोडलेले असताना अॅप उपलब्ध आहे.",
+    "reviewed": false
+  },
+  "rules.packControls": { "text": "ऑफलाइन नियम-पॅक", "reviewed": false },
+  "rules.packSource": {
+    "text": "सक्रिय पॅक: आवृत्ती {version}, तारीख {date}.",
+    "reviewed": false
+  },
+  "rules.exportPack": { "text": "नियम-पॅक निर्यात करा", "reviewed": false },
+  "rules.importPack": { "text": "नियम-पॅक आयात करा", "reviewed": false },
+  "rules.revertPack": {
+    "text": "सोबत दिलेल्या पॅकवर परत जा",
+    "reviewed": false
+  },
+  "rules.checksumNotice": {
+    "text": "चेकसममुळे चुकून बदललेली सामग्री ओळखता येते; पॅक अधिकृत किंवा अस्सल आहे हे सिद्ध होत नाही.",
+    "reviewed": false
+  },
+  "rules.packPreview": {
+    "text": "लागू करण्यापूर्वी आयात केलेला पॅक तपासा",
+    "reviewed": false
+  },
+  "rules.packDetails": {
+    "text": "पॅक आवृत्ती {version}, तारीख {date}; व्याप्ती: {scope}.",
+    "reviewed": false
+  },
+  "rules.packCostImpact": {
+    "text": "अंदाजित नियोक्ता खर्च: आधी {oldCost}, नंतर {newCost} (बदल {difference}).",
+    "reviewed": false
+  },
+  "rules.packGapImpact": {
+    "text": "अनुपालन तूट गुण: आधी {oldScore}, नंतर {newScore}.",
+    "reviewed": false
+  },
+  "rules.ruleNameLabel": { "text": "नियम किंवा क्षेत्र", "reviewed": false },
+  "rules.oldValue": { "text": "सध्याचे मूल्य", "reviewed": false },
+  "rules.newValue": { "text": "आयात केलेले मूल्य", "reviewed": false },
+  "rules.wholeRule": { "text": "संपूर्ण नियम", "reviewed": false },
+  "rules.packNoChanges": {
+    "text": "नियमांच्या क्षेत्रांमध्ये बदल नाही.",
+    "reviewed": false
+  },
+  "rules.packChangesTruncated": {
+    "text": "या पूर्वावलोकनात आणखी {count} बदल दाखवलेले नाहीत.",
+    "reviewed": false
+  },
+  "rules.packApplied": {
+    "text": "आयात केलेला नियम-पॅक लागू करून या उपकरणावर जतन केला.",
+    "reviewed": false
+  },
+  "rules.packExported": {
+    "text": "नियम-पॅक डाउनलोडसाठी तयार आहे.",
+    "reviewed": false
+  },
+  "rules.packExportError": {
+    "text": "नियम-पॅक निर्यात करता आला नाही.",
+    "reviewed": false
+  },
+  "rules.packInvalidError": {
+    "text": "ही वैध नियम-पॅक फाइल नाही. तिची क्षेत्रे आणि स्वरूप तपासा.",
+    "reviewed": false
+  },
+  "rules.packChecksumError": {
+    "text": "नियम-पॅकचा चेकसम त्यातील मजकुराशी जुळत नाही.",
+    "reviewed": false
+  },
+  "rules.packOlderError": {
+    "text": "हा नियम-पॅक सध्याच्या पॅकपेक्षा नवीन नाही.",
+    "reviewed": false
+  },
+  "rules.packStorageError": {
+    "text": "या उपकरणावर आयात केलेला नियम-पॅक जतन किंवा काढता आला नाही.",
+    "reviewed": false
+  },
+  "rules.packReverted": {
+    "text": "सोबत दिलेला नियम-पॅक पुन्हा वापरात आहे.",
+    "reviewed": false
+  },
+  "rules.packNeedsValidProject": {
+    "text": "पॅकमुळे खर्चावर होणारा परिणाम पाहण्यापूर्वी वैध प्रकल्प भरा.",
+    "reviewed": false
+  },
+  "rules.packLoadError": {
+    "text": "जतन केलेला नियम-पॅक लोड किंवा तपासता आला नाही. सोबत दिलेला पॅक वापरात आहे.",
     "reviewed": false
   },
   "view.rulesTitle": { "text": "नियम आणि गृहीतके", "reviewed": false },
@@ -401,6 +631,78 @@
     "text": "प्रत करता येणारी बजेट नोंद",
     "reviewed": false
   },
+  "funder.basisHeading": { "text": "अंदाजाचा आधार", "reviewed": false },
+  "funder.rulesSnapshot": {
+    "text": "नियमांच्या प्रतीची तारीख",
+    "reviewed": false
+  },
+  "funder.estimateDate": { "text": "अंदाजाची तारीख", "reviewed": false },
+  "funder.affectedRules": {
+    "text": "जुनी किंवा अपुष्ट माहिती असलेले नियम",
+    "reviewed": false
+  },
+  "funder.unknownAge": { "text": "वय अज्ञात", "reviewed": false },
+  "funder.ageDays": { "text": "{days} दिवस जुने", "reviewed": false },
+  "funder.driftAssumption": {
+    "text": "बदलाची तात्पुरती कल्पना: दरवर्षी {low}%–{high}%; हे पडताळलेले कायदेशीर मूल्य नाही",
+    "reviewed": false
+  },
+  "funder.assumptionUnavailable": {
+    "text": "वापरण्याजोगी बदलाची कल्पना नाही; स्वतः पडताळा",
+    "reviewed": false
+  },
+  "funder.noStaleRules": {
+    "text": "लागू असलेला कोणताही नियम जुना किंवा अपुष्ट म्हणून वर्गीकृत नाही.",
+    "reviewed": false
+  },
+  "funder.currentScenarioCost": {
+    "text": "सध्याच्या परिस्थितीतील खर्च",
+    "reviewed": false
+  },
+  "funder.verifyAllRules": {
+    "text": "सर्व लागू नियम सध्या लागू आहेत का आणि त्यांची मूल्ये काय आहेत ते तपासा.",
+    "reviewed": false
+  },
+  "funder.lowEstimate": {
+    "text": "कमी परिस्थितीतील नियोक्ता खर्चाचा अंदाज",
+    "reviewed": false
+  },
+  "funder.expectedEstimate": {
+    "text": "अपेक्षित परिस्थितीतील नियोक्ता खर्चाचा अंदाज",
+    "reviewed": false
+  },
+  "funder.recommendedEstimate": {
+    "text": "सुचवलेली अर्थसंकल्प रक्कम (उच्च अंदाज)",
+    "reviewed": false
+  },
+  "funder.recommendationUnavailable": {
+    "text": "उपलब्ध नाही: किमान एका नियमाची अनिश्चितता मोजता येत नाही",
+    "reviewed": false
+  },
+  "funder.uncertaintyUnquantifiable": {
+    "text": "एक किंवा अधिक लागू नियमांची पडताळणी तारीख किंवा वापरण्याजोगी बदलाची कल्पना उपलब्ध नाही. अनिश्चिततेची संख्यात्मक मर्यादा देता येत नाही; परिस्थितीतील आकडा अर्थसंकल्पासाठी पुरेसा नाही.",
+    "reviewed": false
+  },
+  "funder.highEstimateMethod": {
+    "text": "प्रत्येक नियमाच्या वयानुसार बदलाची उच्च कल्पना लागू करून सुचवलेली रक्कम काढली आहे. यामध्ये अतिरिक्त आकस्मिक रक्कम जोडलेली नाही.",
+    "reviewed": false
+  },
+  "funder.cautiousStatement": {
+    "text": "या अंदाजात जुने असू शकणारे नियम वापरले आहेत. अर्थसंकल्प कमी पडण्याची शक्यता कमी करण्यासाठी सुचवलेली रक्कम जाणीवपूर्वक सावध ठेवली आहे.",
+    "reviewed": false
+  },
+  "funder.verifyBeforeSubmission": {
+    "text": "सादर करण्यापूर्वी तपासा; सध्याच्या परिस्थितीतील खर्चाच्या परिणामानुसार प्राधान्य",
+    "reviewed": false
+  },
+  "funder.reconciliation": {
+    "text": "नवीन माहिती मिळाल्यावर नवीन नियम-पॅक आयात करा आणि तुलना करण्यासाठी ही नोंद पुन्हा तयार करा.",
+    "reviewed": false
+  },
+  "freshness.aging": { "text": "जुने होत आहे", "reviewed": false },
+  "freshness.stale": { "text": "जुने", "reviewed": false },
+  "freshness.expired": { "text": "कालावधी संपला", "reviewed": false },
+  "freshness.unverified": { "text": "अपुष्ट", "reviewed": false },
   "validation.project": { "text": "प्रकल्पाची माहिती भरा.", "reviewed": false },
   "validation.projectName": {
     "text": "प्रकल्पाचे नाव लिहा (जास्तीत जास्त 120 अक्षरे).",
@@ -692,6 +994,171 @@
   },
   "dashboard.monthlyAt": {
     "text": "महिना {month}",
+    "reviewed": false
+  },
+  "rules.loadRuralDemo": {
+    "text": "ग्रामीण ऑफलाइन डेमो लोड करा",
+    "reviewed": false
+  },
+  "rules.loadSampleDemo": {
+    "text": "नेहमीचा NGO नमुना लोड करा",
+    "reviewed": false
+  },
+  "rules.demoLoaded": {
+    "text": "जुन्या नियम-पॅकसह ग्रामीण डेमो लोड झाला आहे. नवीन उदाहरण-पॅक पाहण्यासाठी तयार आहे.",
+    "reviewed": false
+  },
+  "rules.demoPackApplied": {
+    "text": "नवीन उदाहरण-पॅक लागू केला. तुमच्या जतन केलेल्या नियम-पॅकमध्ये बदल केलेला नाही.",
+    "reviewed": false
+  },
+  "funder.reconciliationResult": {
+    "text": "नवीन पॅक आयात केल्यानंतर अपेक्षित अंदाजित खर्च {expected} आहे. आधीची मोजता येणारी मर्यादा {low} ते {high} होती; आधीच्या अपेक्षित आकड्यातील बदल {difference} आहे. {coverage}",
+    "reviewed": false
+  },
+  "funder.reconciliationWithin": {
+    "text": "नवीन आकडा त्या मोजता येणाऱ्या मर्यादेत आहे, पण {bounded}.",
+    "reviewed": false
+  },
+  "funder.reconciliationOutside": {
+    "text": "नवीन आकडा त्या मोजता येणाऱ्या मर्यादेबाहेर आहे; {bounded}.",
+    "reviewed": false
+  },
+  "funder.reconciliationBounded": {
+    "text": "आधीची पूर्ण मर्यादा मोजता आली होती",
+    "reviewed": false
+  },
+  "funder.reconciliationUnbounded": {
+    "text": "आधीच्या पूर्ण मर्यादेत मोजता न येणारी अनिश्चितता होती, त्यामुळे संपूर्ण खर्च भागतो हे सिद्ध झालेले नाही",
+    "reviewed": false
+  },
+  "scenario.title": {
+    "text": "प्रकल्पाच्या पर्यायांची तुलना करा",
+    "reviewed": false
+  },
+  "scenario.intro": {
+    "text": "तीनपर्यंत प्रकल्प व्यवस्था जतन करा आणि त्यांच्या मोजलेल्या निकालांची तुलना करा. पहिला जतन केलेला पर्याय आधार असेल.",
+    "reviewed": false
+  },
+  "scenario.nameLabel": { "text": "पर्यायाचे नाव", "reviewed": false },
+  "scenario.saveCurrent": {
+    "text": "सध्याची व्यवस्था जतन करा",
+    "reviewed": false
+  },
+  "scenario.capacity": {
+    "text": "{maximum} पैकी {count} पर्याय जतन केले",
+    "reviewed": false
+  },
+  "scenario.baseline": { "text": "आधार", "reviewed": false },
+  "scenario.scenario": { "text": "पर्याय", "reviewed": false },
+  "scenario.trueCost": {
+    "text": "कर्मचारी खर्चाचा अंदाजित एकूण",
+    "reviewed": false
+  },
+  "scenario.gapScore": {
+    "text": "अनुपालन खर्चातील अंदाजित तूट",
+    "reviewed": false
+  },
+  "scenario.unfundedLiability": {
+    "text": "अनुदान संपताना निधी नसलेली देणी",
+    "reviewed": false
+  },
+  "scenario.classificationWarnings": {
+    "text": "वर्गीकरण संकेत असलेली कामे",
+    "reviewed": false
+  },
+  "scenario.actions": { "text": "कृती", "reviewed": false },
+  "scenario.remove": { "text": "काढा", "reviewed": false },
+  "scenario.empty": {
+    "text": "तुलना सुरू करण्यासाठी प्रकल्पाची एक व्यवस्था जतन करा.",
+    "reviewed": false
+  },
+  "scenario.expectedValues": {
+    "text": "रक्कम प्रत्येक पर्यायाच्या अपेक्षित गणनेवर आधारित आहे; अनिश्चित नियम तपासणे आवश्यक आहे.",
+    "reviewed": false
+  },
+  "scenario.difference": {
+    "text": "(आधारापेक्षा {sign}{value} फरक)",
+    "reviewed": false
+  },
+  "scenario.more": { "text": "जास्त", "reviewed": false },
+  "scenario.less": { "text": "कमी", "reviewed": false },
+  "scenario.same": { "text": "समान", "reviewed": false },
+  "scenario.summaryRiskReduction": {
+    "text": "{baseline} च्या तुलनेत {scenario} चा सरासरी मासिक खर्च {amount} {costDirection} आहे आणि वर्गीकरणाचे {count} संकेत कमी करते.",
+    "reviewed": false
+  },
+  "scenario.summaryCostChange": {
+    "text": "{baseline} च्या तुलनेत {scenario} कर्मचारी खर्चाचा सरासरी मासिक अंदाज {amount} {costDirection} बदलते; वर्गीकरण संकेतांतील बदल {warningDifference} आहे.",
+    "reviewed": false
+  },
+  "scenario.saved": { "text": "पर्याय जतन केला.", "reviewed": false },
+  "scenario.nameRequired": {
+    "text": "या पर्यायाचे नाव लिहा.",
+    "reviewed": false
+  },
+  "scenario.limitReached": {
+    "text": "तुम्ही जास्तीत जास्त तीन पर्याय जतन करू शकता.",
+    "reviewed": false
+  },
+  "scenario.saveError": {
+    "text": "हा प्रकल्प पर्याय म्हणून जतन करता आला नाही.",
+    "reviewed": false
+  },
+  "reserve.title": {
+    "text": "अनुदान संपतानाची राखीव निधी योजना",
+    "reviewed": false
+  },
+  "reserve.intro": {
+    "text": "अनुदान संपताना अंदाजित निधी नसलेल्या खर्चासाठी दरमहा बचतीची योजना करा. यात नियमांमध्ये सध्या समाविष्ट असलेले खर्चच आहेत.",
+    "reviewed": false
+  },
+  "reserve.monthsRemaining": {
+    "text": "बचतीसाठी उपलब्ध महिने",
+    "reviewed": false
+  },
+  "reserve.startingAmount": {
+    "text": "आधीपासून राखीव ठेवलेली रक्कम (₹)",
+    "reviewed": false
+  },
+  "reserve.monthlySetAside": {
+    "text": "दरमहा बाजूला ठेवायची रक्कम",
+    "reviewed": false
+  },
+  "reserve.sufficientBy": {
+    "text": "{band} अंदाज: राखीव रक्कम {date} पर्यंत पुरेशी होईल.",
+    "reviewed": false
+  },
+  "reserve.dateNow": {
+    "text": "आजच पुरेशी आहे",
+    "reviewed": false
+  },
+  "reserve.dateUnbounded": {
+    "text": "ठरवता येत नाही",
+    "reviewed": false
+  },
+  "reserve.progressTitle": {
+    "text": "राखीव निधीची अंदाजित प्रगती",
+    "reviewed": false
+  },
+  "reserve.progressDescription": {
+    "text": "अंदाजित देणींच्या तुलनेत दर महिन्याची अपेक्षित राखीव रक्कम.",
+    "reviewed": false
+  },
+  "reserve.monthTooltip": {
+    "text": "महिना {month}: अपेक्षित राखीव रक्कम {amount}",
+    "reviewed": false
+  },
+  "reserve.unboundedNotice": {
+    "text": "काही संबंधित खर्चांची अनिश्चितता मोजता येत नाही, त्यामुळे जास्तीत जास्त राखीव रक्कम काढता येत नाही. लक्ष्यावर अवलंबून राहण्यापूर्वी माहिती तपासा.",
+    "reviewed": false
+  },
+  "reserve.funderLine": {
+    "text": "अनुदान संपतानाची राखीव बजेट बाब: {months} महिने दरमहा {monthly} बाजूला ठेवा (अपेक्षित निधी नसलेली देणी {total}; जास्त मासिक रक्कम {high}).",
+    "reviewed": false
+  },
+  "reserve.invalid": {
+    "text": "1 ते 60 पूर्ण महिने आणि शून्य किंवा त्यापेक्षा जास्त पूर्ण राखीव रक्कम भरा.",
     "reviewed": false
   }
 }

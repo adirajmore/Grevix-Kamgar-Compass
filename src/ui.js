@@ -8,21 +8,36 @@ import {
   MAX_MONTHLY_SALARY_RUPEES,
   MAX_POSH_PLANNING_COST_RUPEES,
   MAX_ROLE_SALARY_SLIDER,
+  MAX_RESERVE_MONTHS,
+  MAX_SAVED_SCENARIOS,
   MAX_WEEKLY_HOURS,
   STATES,
   SUPPORTED_LANGUAGES,
   UNVERIFIED_DATE
 } from "./constants.js";
 import { renderCostChart, renderGrantTimeline } from "./charts.js";
+import { buildWorkerRightsCard, compareScenarios } from "./engine.js";
 import { generateFunderPack } from "./funderPack.js";
+import {
+  calculatePackChecksum,
+  previewRulePackImport,
+  validateImportedRulePack
+} from "./rulePacks.js";
 import { formatMoney } from "../money.js";
 import {
   getApplicationState,
   loadProject,
+  removeScenario,
+  revertRulesPack,
   setActiveView,
   setFunderLanguage,
+  setFreshnessOptions,
   setLanguage,
   setNotice,
+  setReconciliation,
+  setReservePlanOptions,
+  setRulesPack,
+  saveScenario,
   setSelectedRole,
   setTimelineMonth,
   updateProject
@@ -42,8 +57,14 @@ const GENDER_LABELS = {
 };
 let translations;
 let sampleProject;
+let ruralDemoProject;
+let ruralOldRulesPack;
+let ruralNewRulesPack;
 let mountPoint;
 let onAbout = () => {};
+let offlineMessageKey = "";
+let pendingRulePack = null;
+let speechSynthesisInstance = null;
 
 function translate(
   key,
@@ -372,7 +393,7 @@ function renderRuleDecision(item, rule, language, workerView = false) {
     : "";
   return `<article class="rule-result">
     <div class="rule-result-heading"><h4>${escapeHtml(rule.name[language]?.text || rule.name[language] || rule.name.en)}</h4><div class="status-list">${verificationBadge}<span class="status-badge status-${escapeHtml(item.status)}">${escapeHtml(translate(ruleStatusKey(item.status), language))}</span></div></div>
-    <p>${escapeHtml(translate(item.reason, language))}</p>
+    <p>${escapeHtml(translate(item.reason.replace(/^result\./, ""), language))}</p>
     ${workerView ? `<p class="worker-explanation">${escapeHtml(workerExplanation)}</p>` : ""}
     ${signalText}
     <p>${escapeHtml(rule.note[language]?.text || rule.note[language] || rule.note.en)}</p>
@@ -492,6 +513,7 @@ function renderGapSummary(state) {
     <section class="gap-score-card" aria-label="${escapeHtml(translate("dashboard.gapScore", language))}">
       <p class="eyebrow">${escapeHtml(translate("dashboard.gapScore", language))}</p><strong class="gap-number">${escapeHtml(score)}</strong>
       <p>${escapeHtml(summary)}</p>
+      ${renderRangeBand("dashboard.gapRange", state.calculation.uncertainty?.gap, (value) => `${formatPercent(value)}%`, language)}
     </section>
     <div class="metric-grid">
       ${metric("dashboard.salaryCost", costs.salary, language)}
@@ -501,6 +523,161 @@ function renderGapSummary(state) {
       ${metric("dashboard.budgetedCost", gap.budgetedStaffCost, language)}
       ${state.project.grantAmount === null ? "" : metric("dashboard.grantAmount", state.project.grantAmount, language)}
     </div>`;
+}
+
+function renderRangeBand(labelKey, range, formatValue, language) {
+  if (!range) {
+    return "";
+  }
+  const low = range.low === null ? "—" : formatValue(range.low);
+  const expected = range.expected === null ? "—" : formatValue(range.expected);
+  const high = range.high === null ? null : formatValue(range.high);
+  if (range.high === null || range.low === null || range.expected === null) {
+    return `<div class="range-summary"><p><strong>${escapeHtml(translate(labelKey, language))}</strong></p><p>${escapeHtml(translate("dashboard.rangeLow", language))}: ${escapeHtml(low)} · ${escapeHtml(translate("dashboard.rangeExpected", language))}: ${escapeHtml(expected)} · ${escapeHtml(translate("dashboard.rangeHigh", language))}: ${escapeHtml(high || translate("dashboard.rangeUnbounded", language))}</p></div>`;
+  }
+  const spread = range.high - range.low;
+  const expectedPosition =
+    spread === 0 ? 50 : ((range.expected - range.low) / spread) * 100;
+  return `<div class="range-summary"><p><strong>${escapeHtml(translate(labelKey, language))}</strong></p><div class="range-track" aria-hidden="true"><span class="range-fill"></span><span class="range-expected" style="left:${expectedPosition}%"></span></div><p>${escapeHtml(translate("dashboard.rangeLow", language))}: ${escapeHtml(low)} · ${escapeHtml(translate("dashboard.rangeExpected", language))}: ${escapeHtml(expected)} · ${escapeHtml(translate("dashboard.rangeHigh", language))}: ${escapeHtml(high)}</p></div>`;
+}
+
+function renderFreshnessControls(state) {
+  const { language, asOfDate, verifiedOnDate, limitedInformation } = state;
+  return `<section class="panel freshness-controls" aria-label="${escapeHtml(translate("freshness.controls", language))}">
+    <h3>${escapeHtml(translate("freshness.controls", language))}</h3>
+    <label class="freshness-toggle"><input id="limited-information" type="checkbox"${limitedInformation ? " checked" : ""}><span>${escapeHtml(translate("freshness.limitedInformation", language))}</span></label>
+    <div class="freshness-date-grid">
+      <label for="as-of-date">${escapeHtml(translate("freshness.asOfDate", language))}<input id="as-of-date" type="date" value="${escapeHtml(asOfDate)}"></label>
+      <label for="verified-on-date">${escapeHtml(translate("freshness.verifiedOnDate", language))}<input id="verified-on-date" type="date" value="${escapeHtml(verifiedOnDate)}"></label>
+    </div>
+  </section>`;
+}
+
+function renderRulePackControls(state) {
+  const { language, baseRulesData, bundledRulesData } = state;
+  const imported = baseRulesData.checksum !== bundledRulesData.checksum;
+  return `<section class="panel rules-pack-controls">
+    <h3>${escapeHtml(translate("rules.packControls", language))}</h3>
+    <p>${escapeHtml(
+      translate("rules.packSource", language, {
+        version: baseRulesData.pack_version,
+        date: baseRulesData.pack_date
+      })
+    )}</p>
+    <div class="pack-actions">
+      <button class="button button-secondary" type="button" data-action="load-rural-demo">${escapeHtml(translate("rules.loadRuralDemo", language))}</button>
+      <button class="button button-secondary" type="button" data-action="load-standard-demo">${escapeHtml(translate("rules.loadSampleDemo", language))}</button>
+      <button class="button button-secondary" type="button" data-action="export-rules">${escapeHtml(translate("rules.exportPack", language))}</button>
+      <button class="button button-secondary" type="button" data-action="import-rules">${escapeHtml(translate("rules.importPack", language))}</button>
+      <button class="button button-secondary" type="button" data-action="revert-rules"${imported ? "" : " disabled"}>${escapeHtml(translate("rules.revertPack", language))}</button>
+    </div>
+    <input id="rules-pack-file" type="file" accept="application/json,.json" hidden>
+    <p class="pack-integrity-note">${escapeHtml(translate("rules.checksumNotice", language))}</p>
+    ${renderRulePackPreview(state)}
+  </section>`;
+}
+
+function renderRulePackPreview(state) {
+  if (!pendingRulePack) {
+    return "";
+  }
+  const { language } = state;
+  const pack = pendingRulePack.pack;
+  const previousRules = new Map(
+    state.baseRulesData.rules.map((rule) => [rule.id, rule])
+  );
+  const nextRules = new Map(pack.rules.map((rule) => [rule.id, rule]));
+  const changeRows = pendingRulePack.preview.changes.slice(0, 50);
+  const rows = changeRows
+    .map((change) => {
+      const rule =
+        nextRules.get(change.ruleId) || previousRules.get(change.ruleId);
+      const name =
+        rule?.name?.[language]?.text ||
+        rule?.name?.[language] ||
+        rule?.name?.en ||
+        change.ruleId;
+      const oldValue = formatPackValue(change.oldValue);
+      const newValue = formatPackValue(change.newValue);
+      return `<tr><th scope="row">${escapeHtml(name)}<br><small>${escapeHtml(change.field || translate("rules.wholeRule", language))}</small></th><td>${escapeHtml(oldValue)}</td><td>${escapeHtml(newValue)}</td></tr>`;
+    })
+    .join("");
+  const impact = pendingRulePack.preview.impact;
+  return `<section class="pack-preview" role="dialog" aria-modal="true" aria-labelledby="pack-preview-title">
+    <h4 id="pack-preview-title">${escapeHtml(translate("rules.packPreview", language))}</h4>
+    <p>${escapeHtml(
+      translate("rules.packDetails", language, {
+        version: pack.pack_version,
+        date: pack.pack_date,
+        scope: pack.jurisdiction_scope
+      })
+    )}</p>
+    <p>${escapeHtml(
+      translate("rules.packCostImpact", language, {
+        oldCost: formatMoney(impact.oldEmployerCosts),
+        newCost: formatMoney(impact.newEmployerCosts),
+        difference: formatMoney(impact.employerCostDifference)
+      })
+    )}</p>
+    <p>${escapeHtml(
+      translate("rules.packGapImpact", language, {
+        oldScore: formatGapValue(impact.oldGapScoreBasisPoints),
+        newScore: formatGapValue(impact.newGapScoreBasisPoints)
+      })
+    )}</p>
+    <div class="pack-diff-scroll"><table class="pack-diff-table">
+      <thead><tr><th scope="col">${escapeHtml(translate("rules.ruleNameLabel", language))}</th><th scope="col">${escapeHtml(translate("rules.oldValue", language))}</th><th scope="col">${escapeHtml(translate("rules.newValue", language))}</th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="3">${escapeHtml(translate("rules.packNoChanges", language))}</td></tr>`}</tbody>
+    </table></div>
+    ${pendingRulePack.preview.changes.length > changeRows.length ? `<p>${escapeHtml(translate("rules.packChangesTruncated", language, { count: pendingRulePack.preview.changes.length - changeRows.length }))}</p>` : ""}
+    <div class="pack-actions"><button class="button button-primary" type="button" data-action="apply-rules-pack">${escapeHtml(translate("rules.applyPack", language))}</button><button class="button button-secondary" type="button" data-action="cancel-rules-pack">${escapeHtml(translate("rules.cancelPack", language))}</button></div>
+  </section>`;
+}
+
+function formatPackValue(value) {
+  if (value === undefined) {
+    return "";
+  }
+  return typeof value === "string" ? value : JSON.stringify(value);
+}
+
+function formatGapValue(value) {
+  return value === null ? "—" : `${formatPercent(value)}%`;
+}
+
+function renderFreshnessBanner(state) {
+  const { language, calculation } = state;
+  const uncertainty = calculation?.uncertainty;
+  const freshness = uncertainty?.rules.map((rule) => rule.freshness) || [];
+  const isOld = freshness.some((value) =>
+    ["stale", "expired", "unverified"].includes(value)
+  );
+  const status = uncertainty ? (isOld ? "old" : "aging") : "verified";
+  const label = translate(`freshness.banner.${status}`, language);
+  const icon = status === "verified" ? "✓" : status === "aging" ? "!" : "!";
+  const details =
+    uncertainty?.rules.length > 0
+      ? uncertainty.rules
+          .map((entry) => {
+            const age =
+              entry.ageDays === null
+                ? translate("funder.unknownAge", language)
+                : translate("funder.ageDays", language, {
+                    days: entry.ageDays
+                  });
+            return `<li><strong>${escapeHtml(translate(`ruleName.${entry.ruleId}`, language))}</strong> — ${escapeHtml(translate(`freshness.${entry.freshness}`, language))}; ${escapeHtml(age)}${entry.unquantifiable ? `; ${escapeHtml(translate("freshness.unquantifiable", language))}` : ""}</li>`;
+          })
+          .join("")
+      : `<li>${escapeHtml(translate("freshness.noRelevantRules", language))}</li>`;
+  const assumptions = uncertainty?.rules.some((entry) => entry.assumption)
+    ? `<p>${escapeHtml(translate("freshness.assumptionNotice", language))}</p>`
+    : "";
+  return `<section class="freshness-banner freshness-${status}" aria-label="${escapeHtml(label)}">
+    <span class="freshness-icon" aria-hidden="true">${icon}</span>
+    <div><p><strong>${escapeHtml(label)}</strong></p>
+      <details><summary>${escapeHtml(translate("freshness.details", language))}</summary><ul>${details}</ul>${assumptions}</details>
+    </div>
+  </section>`;
 }
 
 function metric(label, amount, language) {
@@ -530,7 +707,58 @@ function renderCliff(state) {
       )}</p>
       <p>${escapeHtml(translate("dashboard.liability", language, { amount: formatMoney(point.accruedGratuityEstimate) }))}</p>
       <p><strong>${escapeHtml(translate("dashboard.liabilityUnfunded", language, { amount: formatMoney(cliff.unfundedLiabilityEstimate) }))}</strong></p>
+      ${renderRangeBand("dashboard.cliffRange", calculation.uncertainty?.cliff, formatMoney, language)}
     </div>
+  </section>${renderReservePlanner(state)}`;
+}
+
+function renderReservePlanner(state) {
+  const { language, reservePlan } = state;
+  if (!reservePlan) {
+    return "";
+  }
+  const required = reservePlan.monthlySetAside;
+  const sufficient = reservePlan.sufficientBy;
+  const points = reservePlan.progress.slice(1);
+  const bars = points
+    .map(
+      (point) =>
+        `<li class="reserve-chart-month" title="${escapeHtml(translate("reserve.monthTooltip", language, { month: point.month, amount: formatMoney(point.balance.expected) }))}">
+          <span class="reserve-chart-bars" aria-hidden="true">
+            <span class="reserve-chart-bar reserve-low" style="height:${point.percentage.low ?? 0}%"></span>
+            <span class="reserve-chart-bar reserve-expected" style="height:${point.percentage.expected ?? 0}%"></span>
+            <span class="reserve-chart-bar reserve-high" style="height:${point.percentage.high ?? 0}%"></span>
+          </span>
+          <span class="reserve-chart-label">${point.month}</span>
+        </li>`
+    )
+    .join("");
+  const dateText = (band) =>
+    sufficient[band] === null
+      ? translate("reserve.dateUnbounded", language)
+      : sufficient[band] === reservePlan.asOfDate
+        ? translate("reserve.dateNow", language)
+        : sufficient[band];
+  return `<section class="panel reserve-planner" aria-labelledby="reserve-heading">
+    <div class="section-title"><div><h2 id="reserve-heading">${escapeHtml(translate("reserve.title", language))}</h2><p>${escapeHtml(translate("reserve.intro", language))}</p></div></div>
+    <div class="reserve-inputs">
+      <label for="reserve-months-remaining">${escapeHtml(translate("reserve.monthsRemaining", language))}<input id="reserve-months-remaining" type="number" min="1" max="${MAX_RESERVE_MONTHS}" step="1" value="${reservePlan.monthsRemaining}"></label>
+      <label for="reserve-starting-amount">${escapeHtml(translate("reserve.startingAmount", language))}<input id="reserve-starting-amount" type="number" min="0" step="1" value="${reservePlan.startingReserve}"></label>
+    </div>
+    <p class="reserve-range-values"><strong>${escapeHtml(translate("reserve.monthlySetAside", language))}</strong>
+      <span>${escapeHtml(translate("dashboard.rangeLow", language))}: ${escapeHtml(formatMoney(required.low))}</span>
+      <span>${escapeHtml(translate("dashboard.rangeExpected", language))}: ${escapeHtml(formatMoney(required.expected))}</span>
+      <span>${escapeHtml(translate("dashboard.rangeHigh", language))}: ${escapeHtml(required.high === null ? translate("dashboard.rangeUnbounded", language) : formatMoney(required.high))}</span>
+    </p>
+    <div class="reserve-date-grid">
+      <p>${escapeHtml(translate("reserve.sufficientBy", language, { band: translate("dashboard.rangeLow", language), date: dateText("low") }))}</p>
+      <p>${escapeHtml(translate("reserve.sufficientBy", language, { band: translate("dashboard.rangeExpected", language), date: dateText("expected") }))}</p>
+      <p>${escapeHtml(translate("reserve.sufficientBy", language, { band: translate("dashboard.rangeHigh", language), date: dateText("high") }))}</p>
+    </div>
+    <p class="reserve-chart-title">${escapeHtml(translate("reserve.progressTitle", language))}</p>
+    <ol class="reserve-chart" role="img" aria-label="${escapeHtml(translate("reserve.progressDescription", language))}">${bars}</ol>
+    <p class="reserve-legend"><span class="reserve-low-key"></span>${escapeHtml(translate("dashboard.rangeLow", language))}<span class="reserve-expected-key"></span>${escapeHtml(translate("dashboard.rangeExpected", language))}<span class="reserve-high-key"></span>${escapeHtml(translate("dashboard.rangeHigh", language))}</p>
+    ${reservePlan.liability.high === null ? `<p class="reserve-caveat">${escapeHtml(translate("reserve.unboundedNotice", language))}</p>` : ""}
   </section>`;
 }
 
@@ -596,7 +824,8 @@ function renderCliffSummary(state, point) {
       })
     )}</p>
     <p>${escapeHtml(translate("dashboard.liability", language, { amount: formatMoney(point.accruedGratuityEstimate) }))}</p>
-    <p><strong>${escapeHtml(translate("dashboard.liabilityUnfunded", language, { amount: formatMoney(cliff.unfundedLiabilityEstimate) }))}</strong></p>`;
+    <p><strong>${escapeHtml(translate("dashboard.liabilityUnfunded", language, { amount: formatMoney(cliff.unfundedLiabilityEstimate) }))}</strong></p>
+    ${renderRangeBand("dashboard.cliffRange", state.calculation.uncertainty?.cliff, formatMoney, language)}`;
 }
 
 function renderNgoResults(state) {
@@ -621,10 +850,101 @@ function renderNgoResults(state) {
     .join("");
   return `
     <div class="section-title results-heading"><div><p class="eyebrow">${escapeHtml(translate("app.resultsEyebrow", language))}</p><h2>${escapeHtml(translate("dashboard.title", language))}</h2></div></div>
+    ${renderFreshnessControls(state)}
+    ${renderRulePackControls(state)}
+    ${renderFreshnessBanner(state)}
     ${renderGapSummary(state)}
+    ${renderScenarioComparison(state)}
     <div class="panel chart-panel"><h2>${escapeHtml(translate("dashboard.breakdown", language))}</h2>${renderCostChart(calculation.evaluations, (key) => translate(key, language), formatMoney)}</div>
     ${renderCliff(state)}
     <section class="panel role-breakdown"><h2>${escapeHtml(translate("dashboard.roleBreakdown", language))}</h2>${breakdown || `<p>${escapeHtml(translate("dashboard.noRoles", language))}</p>`}</section>`;
+}
+
+function renderScenarioComparison(state) {
+  const { language, savedScenarios } = state;
+  const atLimit = savedScenarios.length >= MAX_SAVED_SCENARIOS;
+  const scenarios = compareScenarios(savedScenarios, state.rulesData, {
+    asOfDate: state.asOfDate,
+    forceCautious: state.limitedInformation
+  });
+  const rows = scenarios.scenarios
+    .map((scenario, index) => {
+      const { metrics, delta } = scenario;
+      return `<tr>
+        <th scope="row">${escapeHtml(scenario.name)}${index === 0 ? ` <span class="scenario-baseline">${escapeHtml(translate("scenario.baseline", language))}</span>` : ""}</th>
+        <td>${escapeHtml(formatMoney(metrics.trueCost))}${renderScenarioDelta(delta.trueCost, "money", index, language)}</td>
+        <td>${escapeHtml(metrics.gapScoreBasisPoints === null ? "—" : `${formatPercent(metrics.gapScoreBasisPoints)}%`)}${renderScenarioDelta(delta.gapScoreBasisPoints, "percentage", index, language)}</td>
+        <td>${escapeHtml(formatMoney(metrics.unfundedLiability))}${renderScenarioDelta(delta.unfundedLiability, "money", index, language)}</td>
+        <td>${escapeHtml(String(metrics.classificationWarnings))}${renderScenarioDelta(delta.classificationWarnings, "count", index, language)}</td>
+        <td><button class="button button-quiet" type="button" data-remove-scenario="${escapeHtml(scenario.id)}">${escapeHtml(translate("scenario.remove", language))}</button></td>
+      </tr>`;
+    })
+    .join("");
+  const summary = scenarios.summary
+    ? renderScenarioSummary(scenarios.summary, scenarios.scenarios, language)
+    : "";
+  return `<section class="panel scenario-comparison" aria-labelledby="scenario-heading">
+    <div class="section-title"><div><h2 id="scenario-heading">${escapeHtml(translate("scenario.title", language))}</h2><p>${escapeHtml(translate("scenario.intro", language))}</p></div></div>
+    <form class="scenario-save-form" id="scenario-save-form">
+      <label for="scenario-name">${escapeHtml(translate("scenario.nameLabel", language))}<input id="scenario-name" name="scenarioName" type="text" maxlength="80" required${atLimit ? " disabled" : ""}></label>
+      <button class="button button-secondary" type="submit"${atLimit ? " disabled" : ""}>${escapeHtml(translate("scenario.saveCurrent", language))}</button>
+      <span class="scenario-capacity">${escapeHtml(translate("scenario.capacity", language, { count: savedScenarios.length, maximum: MAX_SAVED_SCENARIOS }))}</span>
+    </form>
+    ${
+      savedScenarios.length > 0
+        ? `<p class="scenario-note">${escapeHtml(translate("scenario.expectedValues", language))}</p><div class="scenario-table-wrap"><table class="scenario-table">
+      <thead><tr><th scope="col">${escapeHtml(translate("scenario.scenario", language))}</th><th scope="col">${escapeHtml(translate("scenario.trueCost", language))}</th><th scope="col">${escapeHtml(translate("scenario.gapScore", language))}</th><th scope="col">${escapeHtml(translate("scenario.unfundedLiability", language))}</th><th scope="col">${escapeHtml(translate("scenario.classificationWarnings", language))}</th><th scope="col"><span class="visually-hidden">${escapeHtml(translate("scenario.actions", language))}</span></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>${summary}`
+        : `<p class="empty-state">${escapeHtml(translate("scenario.empty", language))}</p>`
+    }
+  </section>`;
+}
+
+function renderScenarioDelta(value, kind, index, language) {
+  if (index === 0 || value === null) {
+    return "";
+  }
+  const formatted =
+    kind === "money"
+      ? formatMoney(Math.abs(value))
+      : kind === "percentage"
+        ? `${formatPercent(Math.abs(value))} pp`
+        : String(Math.abs(value));
+  const sign = value > 0 ? "+" : value < 0 ? "−" : "";
+  return `<small class="scenario-delta">${escapeHtml(translate("scenario.difference", language, { sign, value: formatted }))}</small>`;
+}
+
+function renderScenarioSummary(summary, scenarios, language) {
+  const scenario = scenarios.find((item) => item.id === summary.scenarioId);
+  if (!scenario) {
+    return "";
+  }
+  const costDifference = summary.averageMonthlyCostDifference;
+  const args = {
+    scenario: scenario.name,
+    baseline: scenarios[0].name,
+    amount: formatMoney(Math.abs(costDifference)),
+    costDirection: translate(
+      costDifference > 0
+        ? "scenario.more"
+        : costDifference < 0
+          ? "scenario.less"
+          : "scenario.same",
+      language
+    ),
+    count: summary.classificationWarningsRemoved,
+    warningDifference: signedCount(summary.classificationWarningsChange)
+  };
+  const messageKey =
+    summary.type === "classification_reduction"
+      ? "scenario.summaryRiskReduction"
+      : "scenario.summaryCostChange";
+  return `<p class="scenario-summary" role="status">${escapeHtml(translate(messageKey, language, args))}</p>`;
+}
+
+function signedCount(value) {
+  return value > 0 ? `+${value}` : String(value);
 }
 
 function renderWorkerView(state) {
@@ -656,6 +976,12 @@ function renderWorkerView(state) {
   const cliffMessage = calculation
     ? translate("worker.grantEnd", language)
     : translate("worker.missingInformation", language);
+  const rightsCard = buildWorkerRightsCard(
+    project,
+    selectedRoleId,
+    calculation,
+    rulesData
+  );
   return `<section class="panel worker-panel">
     <p class="eyebrow">${escapeHtml(translate("view.workerTitle", language))}</p>
     <h1>${escapeHtml(translate("view.workerTitle", language))}</h1>
@@ -667,7 +993,152 @@ function renderWorkerView(state) {
     <p>${escapeHtml(translate("worker.missingInformation", language))}</p>
     <div class="rule-results">${missingProtections}</div>
     <aside class="worker-question"><p>${escapeHtml(translate("worker.askEmployer", language))}</p><p>${escapeHtml(cliffMessage)}</p></aside>
+    ${calculation?.uncertainty ? `<aside class="worker-uncertainty"><p>${escapeHtml(translate("worker.uncertain", language))}</p><p>${escapeHtml(translate("worker.confirmLocalOffice", language))}</p></aside>` : ""}
+    ${rightsCard ? renderWorkerRightsCard(rightsCard, rulesData, language) : ""}
   </section>`;
+}
+
+function renderWorkerRightsCard(card, rulesData, language) {
+  const renderItems = (items, emptyKey, includeExplanation) =>
+    items.length
+      ? `<ul class="rights-card-list">${items
+          .map((item) => {
+            const name =
+              item.name[language]?.text || item.name[language] || item.name.en;
+            const explanation =
+              item.workerExplanation[language]?.text ||
+              item.workerExplanation[language] ||
+              item.workerExplanation.en;
+            return `<li>
+              <p class="rights-card-rule-title"><span aria-hidden="true">${includeExplanation ? "✓" : "i"}</span><strong>${escapeHtml(name)}</strong>${includeExplanation ? "" : `<span class="rights-card-status">${escapeHtml(translate(ruleStatusKey(item.status), language))}</span>`}</p>
+              ${includeExplanation ? `<p>${escapeHtml(explanation)}</p>` : ""}
+              <p class="rights-card-date">${escapeHtml(translate("rule.lastVerified", language))}: ${escapeHtml(item.lastVerified)}</p>
+            </li>`;
+          })
+          .join("")}</ul>`
+      : `<p>${escapeHtml(translate(emptyKey, language))}</p>`;
+  const cardText = `<div class="rights-card-content">
+    <header class="rights-card-header">
+      <p class="eyebrow">${escapeHtml(translate("app.name", language))}</p>
+      <h2>${escapeHtml(translate("worker.rightsCardTitle", language))}</h2>
+      <p>${escapeHtml(translate("worker.rightsCardIntro", language))}</p>
+      <p class="rights-card-role"><strong>${escapeHtml(translate("worker.selectRole", language))}:</strong> ${escapeHtml(card.roleTitle)}</p>
+      <p class="rights-card-date">${escapeHtml(translate("worker.rulesPackDate", language))}: ${escapeHtml(rulesData.pack_date || "TO VERIFY")}</p>
+    </header>
+    <section>
+      <h3><span aria-hidden="true">✓</span> ${escapeHtml(translate("worker.rightsPossible", language))}</h3>
+      <p>${escapeHtml(translate("worker.rightsPossibleIntro", language))}</p>
+      ${renderItems(card.possibleProtections, "worker.rightsEmptyPossible", true)}
+    </section>
+    <section>
+      <h3><span aria-hidden="true">?</span> ${escapeHtml(translate("worker.rightsNotConfirmed", language))}</h3>
+      <p>${escapeHtml(translate("worker.rightsNotConfirmedIntro", language))}</p>
+      ${renderItems(card.notConfirmedProtections, "worker.rightsEmptyNotConfirmed", false)}
+    </section>
+    <section>
+      <h3><span aria-hidden="true">?</span> ${escapeHtml(translate("worker.rightsAskHeading", language))}</h3>
+      <p>${escapeHtml(translate("worker.askEmployer", language))}</p>
+    </section>
+    <section>
+      <h3><span aria-hidden="true">→</span> ${escapeHtml(translate("worker.rightsGrantHeading", language))}</h3>
+      <p>${escapeHtml(translate("worker.rightsRoleEnd", language, { month: card.lastWorkingMonth }))}</p>
+      <p>${escapeHtml(translate("worker.grantEnd", language))}</p>
+    </section>
+    ${card.uncertain ? `<aside class="rights-card-caution"><p>${escapeHtml(translate("worker.uncertain", language))}</p><p>${escapeHtml(translate("worker.confirmLocalOffice", language))}</p></aside>` : ""}
+    <footer class="rights-card-disclaimer">${escapeHtml(translate("notice.disclaimer", language))}</footer>
+  </div>`;
+  return `<article id="worker-rights-card" class="worker-rights-card" lang="${escapeHtml(language)}" aria-labelledby="rights-card-heading">
+    <div class="rights-card-screen-controls">
+      <div class="rights-speech-controls" data-language="${escapeHtml(language)}">${renderRightsSpeechControl(language)}</div>
+      <button class="button button-secondary rights-card-print-control" type="button" data-action="print-rights-card">${escapeHtml(translate("worker.rightsPrint", language))}</button>
+    </div>
+    <div class="rights-card-reading" aria-hidden="true">${cardText}</div>
+    ${cardText.replace(
+      `<h2>${escapeHtml(translate("worker.rightsCardTitle", language))}</h2>`,
+      `<h2 id="rights-card-heading">${escapeHtml(translate("worker.rightsCardTitle", language))}</h2>`
+    )}
+    <p class="rights-card-speech-status" id="rights-card-speech-status" role="status" aria-live="polite"></p>
+  </article>`;
+}
+
+function renderRightsSpeechControl(language) {
+  return hasSpeechVoice(language)
+    ? `<button class="button button-secondary" type="button" data-action="read-rights-card">${escapeHtml(translate("worker.rightsReadAloud", language))}</button>`
+    : `<p class="rights-card-voice-unavailable" role="status">${escapeHtml(translate("worker.rightsVoiceUnavailable", language))}</p>`;
+}
+
+function hasSpeechVoice(language) {
+  return Boolean(
+    typeof window !== "undefined" &&
+      window.speechSynthesis &&
+      typeof window.SpeechSynthesisUtterance === "function" &&
+      typeof window.speechSynthesis.getVoices === "function" &&
+      window.speechSynthesis
+        .getVoices()
+        .some((voice) => voice.lang.toLowerCase().startsWith(`${language}-`))
+  );
+}
+
+function speakWorkerRightsCard(language) {
+  const voice = window.speechSynthesis
+    .getVoices()
+    .find((item) => item.lang.toLowerCase().startsWith(`${language}-`));
+  if (!voice) {
+    const status = mountPoint.querySelector("#rights-card-speech-status");
+    if (status) {
+      status.textContent = translate("worker.rightsVoiceUnavailable", language);
+    }
+    return;
+  }
+  const source = mountPoint.querySelector(".rights-card-reading");
+  if (!source) {
+    return;
+  }
+  const utterance = new window.SpeechSynthesisUtterance(source.textContent);
+  utterance.lang = voice.lang;
+  utterance.voice = voice;
+  utterance.onerror = (event) => {
+    console.error(
+      "Kamgar Compass could not read the Worker Rights Card aloud.",
+      event.error
+    );
+    const status = mountPoint.querySelector("#rights-card-speech-status");
+    if (status) {
+      status.textContent = translate("worker.rightsSpeechError", language);
+    }
+  };
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utterance);
+}
+
+function refreshRightsSpeechControl() {
+  const control = mountPoint?.querySelector(".rights-speech-controls");
+  if (!control || control.contains(document.activeElement)) {
+    return;
+  }
+  const language = control.dataset.language;
+  control.innerHTML = renderRightsSpeechControl(language);
+}
+
+function printWorkerRightsCard() {
+  if (!mountPoint.querySelector("#worker-rights-card")) {
+    return;
+  }
+  const clearPrintMode = () =>
+    document.body.classList.remove("printing-rights-card");
+  window.addEventListener("afterprint", clearPrintMode, { once: true });
+  document.body.classList.add("printing-rights-card");
+  try {
+    window.print();
+  } catch (error) {
+    clearPrintMode();
+    console.error(
+      "Kamgar Compass could not print the Worker Rights Card.",
+      error
+    );
+    setNotice("worker.rightsPrintError");
+    renderApp();
+  }
 }
 
 function renderRulesView(state) {
@@ -720,12 +1191,13 @@ function renderRulesView(state) {
     </article>`;
     })
     .join("");
-  return `<section class="panel rules-panel"><p class="eyebrow">${escapeHtml(translate("view.rulesTitle", language))}</p><h1>${escapeHtml(translate("view.rulesTitle", language))}</h1><p class="intro">${escapeHtml(translate("view.rulesIntro", language))}</p><div class="rule-audit-list">${rules}</div></section>`;
+  return `<section class="panel rules-panel"><p class="eyebrow">${escapeHtml(translate("view.rulesTitle", language))}</p><h1>${escapeHtml(translate("view.rulesTitle", language))}</h1><p class="intro">${escapeHtml(translate("view.rulesIntro", language))}</p>${renderRulePackControls(state)}<div class="rule-audit-list">${rules}</div></section>`;
 }
 
 function renderFunderView(state) {
   const { project, rulesData, calculation, funderLanguage } = state;
-  const translateFunder = (key) => translate(key, funderLanguage);
+  const translateFunder = (key, replacements) =>
+    translate(key, funderLanguage, replacements);
   if (!calculation || !state.validation.valid) {
     return `<section class="panel funder-panel" lang="${escapeHtml(funderLanguage)}">
       <div class="section-title"><h1>${escapeHtml(translate("view.funderTitle", funderLanguage))}</h1>
@@ -739,7 +1211,10 @@ function renderFunderView(state) {
     rulesData,
     calculation,
     translateFunder,
-    formatMoney
+    formatMoney,
+    funderLanguage,
+    state.reconciliation,
+    state.reservePlan
   );
   const escapedNote = escapeHtml(note);
   const roleRows = calculation.costs.roles
@@ -798,6 +1273,7 @@ function renderApp() {
     <a class="brand" href="./">${escapeHtml(translate("app.name", language))}</a>
     <button class="about-link" type="button" data-action="about">${escapeHtml(translate("welcome.about", language))}</button>
     <label class="language-control"><span>${escapeHtml(translate("language.label", language))}</span><select id="worker-language">${languageOptions(language, language)}</select></label>
+    <p class="offline-indicator" id="offline-status"${offlineMessageKey ? "" : " hidden"} aria-live="polite">${offlineMessageKey ? escapeHtml(translate(offlineMessageKey, language)) : ""}</p>
   </header>
   <main>
     <section class="hero"><p class="eyebrow">${escapeHtml(translate("app.heroEyebrow", language))}</p><h1 tabindex="-1">${escapeHtml(translate("app.tagline", language))}</h1><p>${escapeHtml(translate("app.heroNote", language))}</p></section>
@@ -812,6 +1288,21 @@ function renderApp() {
     <aside class="notice">${escapeHtml(translate("notice.disclaimer", language))}</aside>
   </main>`;
   bindEvents();
+}
+
+/**
+ * Update the visible network/cache status without interrupting the app.
+ * @param {string} messageKey Translation key, or an empty string to hide it.
+ * @returns {void}
+ */
+export function setOfflineStatus(messageKey) {
+  offlineMessageKey = messageKey;
+  const indicator = mountPoint?.querySelector("#offline-status");
+  if (indicator) {
+    const language = getApplicationState().language;
+    indicator.hidden = !messageKey;
+    indicator.textContent = messageKey ? translate(messageKey, language) : "";
+  }
 }
 
 function navButton(view, label, activeView, language) {
@@ -967,7 +1458,218 @@ async function copyFunderNote() {
   renderApp();
 }
 
+async function exportRulesPack() {
+  const pack = getApplicationState().baseRulesData;
+  try {
+    const exported = {
+      ...pack,
+      checksum: await calculatePackChecksum(pack)
+    };
+    const blob = new Blob([JSON.stringify(exported, null, 2)], {
+      type: "application/json"
+    });
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = objectUrl;
+    link.download = `kamgar-compass-rules-${pack.pack_date}.json`;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(objectUrl);
+    setNotice("rules.packExported");
+  } catch (error) {
+    console.error("Kamgar Compass could not export the rules pack.", error);
+    setNotice("rules.packExportError");
+  }
+  renderApp();
+}
+
+function rulePackErrorKey(error) {
+  const message = String(error?.message || "");
+  if (message.includes("checksum")) {
+    return "rules.packChecksumError";
+  }
+  if (message.includes("newer")) {
+    return "rules.packOlderError";
+  }
+  return "rules.packInvalidError";
+}
+
+async function previewImportedRulePack(file) {
+  if (!file) {
+    return;
+  }
+  pendingRulePack = null;
+  const state = getApplicationState();
+  try {
+    if (file.size > 2_000_000) {
+      throw new TypeError(
+        "Rules pack file is larger than the supported limit."
+      );
+    }
+    if (!state.validation.valid) {
+      throw new TypeError(
+        "A valid project is required for pack impact preview."
+      );
+    }
+    const pack = JSON.parse(await file.text());
+    await prepareRulePackPreview(pack, false);
+    return;
+  } catch (error) {
+    console.error(
+      "Kamgar Compass could not preview the imported rules pack.",
+      error
+    );
+    setNotice(
+      error.message.includes("valid project")
+        ? "rules.packNeedsValidProject"
+        : rulePackErrorKey(error)
+    );
+  }
+  renderApp();
+}
+
+async function prepareRulePackPreview(pack, isDemo) {
+  const state = getApplicationState();
+  await validateImportedRulePack(pack, state.baseRulesData);
+  const preview = previewRulePackImport(
+    state.baseRulesData,
+    pack,
+    state.validation.value,
+    {
+      asOfDate: state.asOfDate,
+      forceCautious: state.limitedInformation
+    }
+  );
+  pendingRulePack = { pack, preview, isDemo };
+  setNotice(isDemo ? "rules.demoLoaded" : "");
+  renderApp();
+}
+
+async function loadRuralOfflineDemo() {
+  pendingRulePack = null;
+  setReconciliation(null);
+  loadProject(ruralDemoProject);
+  setRulesPack(ruralOldRulesPack);
+  setFreshnessOptions({
+    asOfDate: "2026-10-13",
+    verifiedOnDate: "",
+    limitedInformation: true
+  });
+  try {
+    await prepareRulePackPreview(ruralNewRulesPack, true);
+  } catch (error) {
+    console.error(
+      "Kamgar Compass could not prepare the offline demo pack.",
+      error
+    );
+    setNotice(rulePackErrorKey(error));
+    renderApp();
+  }
+}
+
+function loadStandardSample() {
+  pendingRulePack = null;
+  setReconciliation(null);
+  loadProject(sampleProject);
+  setRulesPack(getApplicationState().bundledRulesData);
+  setFreshnessOptions({
+    asOfDate: getApplicationState().asOfDate,
+    verifiedOnDate: "",
+    limitedInformation: false
+  });
+  setNotice("form.sampleLoaded");
+  renderApp();
+}
+
+function applyImportedRulePack() {
+  if (!pendingRulePack) {
+    return;
+  }
+  const previousUncertainty = getApplicationState().calculation?.uncertainty;
+  const isDemo = pendingRulePack.isDemo;
+  try {
+    if (!isDemo) {
+      localStorage.setItem(
+        "kamgar-compass-rules-pack",
+        JSON.stringify(pendingRulePack.pack)
+      );
+    }
+  } catch (error) {
+    console.error(
+      "Kamgar Compass could not save the imported rules pack.",
+      error
+    );
+    setNotice("rules.packStorageError");
+    renderApp();
+    return;
+  }
+  setRulesPack(pendingRulePack.pack);
+  const updated = getApplicationState();
+  const nextExpected =
+    updated.calculation?.uncertainty?.costs.expected ??
+    updated.calculation?.costs.estimatedEmployerCosts;
+  const previousRange = previousUncertainty?.costs.quantified;
+  if (
+    previousUncertainty &&
+    Number.isFinite(nextExpected) &&
+    Number.isFinite(previousUncertainty.costs.expected) &&
+    Number.isFinite(previousRange?.low) &&
+    Number.isFinite(previousRange?.high)
+  ) {
+    setReconciliation({
+      expected: nextExpected,
+      low: previousRange.low,
+      high: previousRange.high,
+      difference: nextExpected - previousUncertainty.costs.expected,
+      withinQuantifiedRange:
+        nextExpected >= previousRange.low && nextExpected <= previousRange.high,
+      fullRangeBounded: previousUncertainty.costs.high !== null
+    });
+  }
+  pendingRulePack = null;
+  setNotice(isDemo ? "rules.demoPackApplied" : "rules.packApplied");
+  renderApp();
+}
+
+function revertToBundledRulesPack() {
+  try {
+    localStorage.removeItem("kamgar-compass-rules-pack");
+  } catch (error) {
+    console.error(
+      "Kamgar Compass could not remove the saved rules pack.",
+      error
+    );
+    setNotice("rules.packStorageError");
+    renderApp();
+    return;
+  }
+  pendingRulePack = null;
+  revertRulesPack();
+  setNotice("rules.packReverted");
+  renderApp();
+}
+
 function bindEvents() {
+  mountPoint.onsubmit = (event) => {
+    if (event.target.id !== "scenario-save-form") {
+      return;
+    }
+    event.preventDefault();
+    try {
+      saveScenario(mountPoint.querySelector("#scenario-name").value);
+      setNotice("scenario.saved");
+    } catch (error) {
+      setNotice(
+        error instanceof RangeError
+          ? "scenario.limitReached"
+          : error.message.includes("name")
+            ? "scenario.nameRequired"
+            : "scenario.saveError"
+      );
+    }
+    renderApp();
+  };
   mountPoint.oninput = (event) => {
     const target = event.target;
     if (target.id === "timeline-range") {
@@ -997,9 +1699,56 @@ function bindEvents() {
     } else if (target.id === "funder-language") {
       setFunderLanguage(target.value);
       renderApp();
+    } else if (
+      ["as-of-date", "verified-on-date", "limited-information"].includes(
+        target.id
+      )
+    ) {
+      const asOfDate = mountPoint.querySelector("#as-of-date").value;
+      if (!asOfDate) {
+        setNotice("freshness.invalidAsOfDate");
+        renderApp();
+        return;
+      }
+      setFreshnessOptions({
+        asOfDate,
+        verifiedOnDate: mountPoint.querySelector("#verified-on-date").value,
+        limitedInformation: mountPoint.querySelector("#limited-information")
+          .checked
+      });
+      renderApp();
+    } else if (
+      ["reserve-months-remaining", "reserve-starting-amount"].includes(
+        target.id
+      )
+    ) {
+      const current = getApplicationState();
+      try {
+        setReservePlanOptions({
+          monthsRemaining:
+            target.id === "reserve-months-remaining"
+              ? Number(target.value)
+              : current.reserveMonthsRemaining,
+          startingReserve:
+            target.id === "reserve-starting-amount"
+              ? Number(target.value)
+              : current.reserveStartingAmount
+        });
+      } catch (error) {
+        console.error(
+          "Kamgar Compass could not update the reserve plan.",
+          error
+        );
+        setNotice("reserve.invalid");
+      }
+      renderApp();
     } else if (target.id === "worker-role") {
       setSelectedRole(target.value);
       renderApp();
+    } else if (target.id === "rules-pack-file") {
+      const file = target.files?.[0];
+      target.value = "";
+      previewImportedRulePack(file);
     } else if (target.closest("#project-form")) {
       updateFromForm();
     }
@@ -1030,7 +1779,7 @@ function bindEvents() {
   };
   mountPoint.onclick = (event) => {
     const target = event.target.closest(
-      "[data-view], [data-action], [data-remove-role]"
+      "[data-view], [data-action], [data-remove-role], [data-remove-scenario]"
     );
     if (!target) {
       return;
@@ -1039,17 +1788,39 @@ function bindEvents() {
       setActiveView(target.dataset.view);
       renderApp();
     } else if (target.dataset.action === "load-sample") {
-      loadProject(sampleProject);
-      setNotice("form.sampleLoaded");
-      renderApp();
+      loadStandardSample();
+    } else if (target.dataset.action === "load-standard-demo") {
+      loadStandardSample();
+    } else if (target.dataset.action === "load-rural-demo") {
+      loadRuralOfflineDemo();
     } else if (target.dataset.action === "add-role") {
       addRole();
     } else if (target.dataset.removeRole !== undefined) {
       removeRole(Number(target.dataset.removeRole));
+    } else if (target.dataset.removeScenario !== undefined) {
+      removeScenario(target.dataset.removeScenario);
+      renderApp();
     } else if (target.dataset.action === "copy-funder") {
       copyFunderNote();
     } else if (target.dataset.action === "print") {
       window.print();
+    } else if (target.dataset.action === "print-rights-card") {
+      printWorkerRightsCard();
+    } else if (target.dataset.action === "read-rights-card") {
+      speakWorkerRightsCard(
+        target.closest(".rights-speech-controls").dataset.language
+      );
+    } else if (target.dataset.action === "export-rules") {
+      exportRulesPack();
+    } else if (target.dataset.action === "import-rules") {
+      mountPoint.querySelector("#rules-pack-file")?.click();
+    } else if (target.dataset.action === "apply-rules-pack") {
+      applyImportedRulePack();
+    } else if (target.dataset.action === "cancel-rules-pack") {
+      pendingRulePack = null;
+      renderApp();
+    } else if (target.dataset.action === "revert-rules") {
+      revertToBundledRulesPack();
     } else if (target.dataset.action === "about") {
       onAbout();
     }
@@ -1066,6 +1837,20 @@ export function mountApplication(element, data) {
   mountPoint = element;
   translations = data.locales;
   sampleProject = data.sampleProject;
+  ruralDemoProject = data.ruralDemoProject;
+  ruralOldRulesPack = data.ruralOldRulesPack;
+  ruralNewRulesPack = data.ruralNewRulesPack;
   onAbout = data.onAbout || (() => {});
+  if (
+    !speechSynthesisInstance &&
+    typeof window !== "undefined" &&
+    window.speechSynthesis?.addEventListener
+  ) {
+    speechSynthesisInstance = window.speechSynthesis;
+    speechSynthesisInstance.addEventListener(
+      "voiceschanged",
+      refreshRightsSpeechControl
+    );
+  }
   renderApp();
 }

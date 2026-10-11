@@ -1,0 +1,398 @@
+{
+  "schema_version": 1,
+  "pack_version": "illustrative-1.1",
+  "pack_date": "2026-10-12",
+  "jurisdiction_scope": "Maharashtra, India ? ILLUSTRATIVE SAMPLE DATA ONLY; dates simulate pack age and are not real verification or notifications.",
+  "checksum": "58940fc5e9b2d8438f5d3e8e7dd3429fe4fb8a460e24e7df725004b57cd30999",
+  "rules": [
+    {
+      "id": "epf_employer",
+      "area": "epf",
+      "name": {
+        "en": "EPF employer contribution",
+        "hi": {
+          "text": "ईपीएफ में नियोक्ता का अंशदान",
+          "reviewed": false
+        },
+        "mr": {
+          "text": "ईपीएफमधील नियोक्त्याचे अंशदान",
+          "reviewed": false
+        }
+      },
+      "note": {
+        "en": "This scenario estimate depends on establishment coverage, eligible employees and the applicable wage basis. Verify each detail before relying on the amount.",
+        "hi": {
+          "text": "यह अनुमान संस्था पर लागू नियमों, पात्र कर्मचारियों और वेतन की गणना पर निर्भर है। इस राशि पर भरोसा करने से पहले हर बात की पुष्टि करें।",
+          "reviewed": false
+        },
+        "mr": {
+          "text": "हा अंदाज आस्थापनेला लागू नियम, पात्र कर्मचारी आणि वेतनाच्या गणनेवर अवलंबून आहे. या रकमेवर अवलंबून राहण्यापूर्वी प्रत्येक तपशील तपासा.",
+          "reviewed": false
+        }
+      },
+      "worker_explanation": {
+        "en": "Your provident-fund coverage depends on the employer, your work arrangement and current eligibility rules. Ask whether you are enrolled and where to check contributions.",
+        "hi": {
+          "text": "भविष्य निधि की सुविधा आपके नियोक्ता, काम की व्यवस्था और मौजूदा पात्रता नियमों पर निर्भर है। पूछें कि आपका पंजीकरण हुआ है या नहीं और अंशदान कहाँ देख सकते हैं।",
+          "reviewed": false
+        },
+        "mr": {
+          "text": "भविष्य निर्वाह निधीची सुविधा नियोक्ता, कामाची व्यवस्था आणि सध्याच्या पात्रता नियमांवर अवलंबून असते. तुमची नोंदणी झाली आहे का आणि अंशदान कुठे पाहता येईल ते विचारा.",
+          "reviewed": false
+        }
+      },
+      "applies_if": {
+        "minimum_headcount": {
+          "value": 20,
+          "last_verified": "2026-10-12"
+        },
+        "contract_types": ["employee_fixed", "employee_permanent"]
+      },
+      "calculation": {
+        "type": "percent_of_wage",
+        "rate_basis_points": {
+          "value": 1200,
+          "last_verified": "2026-10-12"
+        },
+        "wage_ceiling_monthly": {
+          "value": 15000,
+          "last_verified": "2026-10-12"
+        },
+        "wage_basis": "capped_at_ceiling"
+      },
+      "source_law": "Employees' Provident Funds and Miscellaneous Provisions Act, 1952 / Code on Social Security, 2020",
+      "source_section": "TO VERIFY",
+      "last_verified": "2026-10-12",
+      "confidence": "low",
+      "effective_from": "TO VERIFY",
+      "volatility": "medium",
+      "drift_assumption": {
+        "annual_change_low_pct": 0,
+        "annual_change_high_pct": 5,
+        "basis": "ASSUMPTION - TO VERIFY"
+      },
+      "refer_to_professional_if": "Establishment coverage, employee eligibility, exemptions, wage components, or contribution base are uncertain."
+    },
+    {
+      "id": "esi_employer",
+      "area": "esi",
+      "name": {
+        "en": "ESI employer contribution",
+        "hi": {
+          "text": "ईएसआई में नियोक्ता का अंशदान",
+          "reviewed": false
+        },
+        "mr": {
+          "text": "ईएसआयमधील नियोक्त्याचे अंशदान",
+          "reviewed": false
+        }
+      },
+      "note": {
+        "en": "This scenario estimate uses a provisional establishment headcount and wage ceiling. Check coverage and current contribution rules before using the estimate.",
+        "hi": {
+          "text": "यह अनुमान संस्था में कर्मचारियों की संख्या और वेतन सीमा के अस्थायी मान पर आधारित है। इसका उपयोग करने से पहले लागू नियमों की पुष्टि करें।",
+          "reviewed": false
+        },
+        "mr": {
+          "text": "हा अंदाज आस्थापनेतील कर्मचारी संख्या आणि वेतनमर्यादेच्या तात्पुरत्या मूल्यावर आधारित आहे. तो वापरण्यापूर्वी लागू नियम तपासा.",
+          "reviewed": false
+        }
+      },
+      "worker_explanation": {
+        "en": "Ask whether health and sickness benefits may cover your job, what wage rules are used and how to get help if you are unwell.",
+        "hi": {
+          "text": "पूछें कि आपके काम पर स्वास्थ्य और बीमारी के लाभ लागू हो सकते हैं या नहीं, वेतन के कौन-से नियम देखे जाते हैं और बीमार होने पर मदद कैसे मिलेगी।",
+          "reviewed": false
+        },
+        "mr": {
+          "text": "तुमच्या कामाला आरोग्य आणि आजारपणाचे लाभ लागू होऊ शकतात का, कोणते वेतन नियम वापरले जातात आणि आजारी पडल्यास मदत कशी मिळेल ते विचारा.",
+          "reviewed": false
+        }
+      },
+      "applies_if": {
+        "minimum_headcount": {
+          "value": 10,
+          "last_verified": "2026-10-12"
+        },
+        "contract_types": ["employee_fixed", "employee_permanent"],
+        "monthly_wage_at_most": {
+          "value": 21000,
+          "last_verified": "2026-10-12"
+        }
+      },
+      "calculation": {
+        "type": "percent_of_wage",
+        "rate_basis_points": {
+          "value": 325,
+          "last_verified": "2026-10-12"
+        },
+        "wage_basis": "full_wage"
+      },
+      "source_law": "Employees' State Insurance Act, 1948 / Code on Social Security, 2020",
+      "source_section": "TO VERIFY",
+      "last_verified": "2026-10-12",
+      "confidence": "low",
+      "effective_from": "TO VERIFY",
+      "volatility": "medium",
+      "drift_assumption": {
+        "annual_change_low_pct": 0,
+        "annual_change_high_pct": 5,
+        "basis": "ASSUMPTION - TO VERIFY"
+      },
+      "refer_to_professional_if": "State coverage, establishment coverage, wage definition, or employee eligibility are uncertain."
+    },
+    {
+      "id": "gratuity_accrual",
+      "area": "gratuity",
+      "name": {
+        "en": "Gratuity accrual estimate",
+        "hi": {
+          "text": "ग्रेच्युटी की अनुमानित राशि",
+          "reviewed": false
+        },
+        "mr": {
+          "text": "ग्रॅच्युइटीचा अंदाजित संचय",
+          "reviewed": false
+        }
+      },
+      "note": {
+        "en": "A monthly scenario accrual is not a determination that gratuity is payable. Eligibility and calculation can depend on service length, termination circumstances and current law; fixed-term eligibility needs particular review.",
+        "hi": {
+          "text": "हर महीने की यह अनुमानित राशि यह तय नहीं करती कि ग्रेच्युटी देनी होगी। पात्रता और गणना सेवा अवधि, नौकरी समाप्त होने की स्थिति और मौजूदा कानून पर निर्भर कर सकती है। निश्चित अवधि के काम की अलग से जाँच ज़रूरी है।",
+          "reviewed": false
+        },
+        "mr": {
+          "text": "दरमहा दाखवलेली ही अंदाजित रक्कम ग्रॅच्युइटी देय आहे असे ठरवत नाही. पात्रता आणि गणना सेवाकाळ, नोकरी संपण्याची परिस्थिती व सध्याच्या कायद्यावर अवलंबून असू शकते. मुदतबद्ध नोकरीसाठी स्वतंत्र तपासणी आवश्यक आहे.",
+          "reviewed": false
+        }
+      },
+      "worker_explanation": {
+        "en": "Ask how your length of service and type of contract affect any gratuity due when work ends. This estimate does not decide whether a payment is owed.",
+        "hi": {
+          "text": "पूछें कि नौकरी की अवधि और अनुबंध का प्रकार, काम खत्म होने पर मिलने वाली ग्रेच्युटी को कैसे प्रभावित करते हैं। यह अनुमान भुगतान का अधिकार तय नहीं करता।",
+          "reviewed": false
+        },
+        "mr": {
+          "text": "कामाचा कालावधी आणि कराराचा प्रकार काम संपल्यावर मिळू शकणाऱ्या ग्रॅच्युइटीवर कसा परिणाम करतो ते विचारा. हा अंदाज देय रक्कम ठरवत नाही.",
+          "reviewed": false
+        }
+      },
+      "applies_if": {
+        "contract_types": ["employee_fixed", "employee_permanent"]
+      },
+      "calculation": {
+        "type": "percent_of_wage",
+        "rate_basis_points": {
+          "value": 481,
+          "last_verified": "2026-10-12"
+        },
+        "wage_basis": "full_wage",
+        "fixed_term_eligibility_months": {
+          "value": 12,
+          "last_verified": "2026-10-12"
+        },
+        "permanent_eligibility_months": {
+          "value": 60,
+          "last_verified": "2026-10-12"
+        }
+      },
+      "source_law": "Payment of Gratuity Act, 1972 / Code on Social Security, 2020",
+      "source_section": "TO VERIFY",
+      "last_verified": "2026-10-12",
+      "confidence": "low",
+      "effective_from": "TO VERIFY",
+      "volatility": "low",
+      "drift_assumption": {
+        "annual_change_low_pct": 0,
+        "annual_change_high_pct": 2,
+        "basis": "ASSUMPTION - TO VERIFY"
+      },
+      "refer_to_professional_if": "Service continuity, fixed-term eligibility, wage definition or termination entitlement are uncertain."
+    },
+    {
+      "id": "minimum_wage_check",
+      "area": "minimum_wage",
+      "name": {
+        "en": "State minimum-wage check",
+        "hi": {
+          "text": "राज्य के न्यूनतम वेतन की जाँच",
+          "reviewed": false
+        },
+        "mr": {
+          "text": "राज्याच्या किमान वेतनाची तपासणी",
+          "reviewed": false
+        }
+      },
+      "note": {
+        "en": "Minimum wages can depend on state, scheduled employment, skill category and effective date. No state rate is supplied until a reviewer verifies the correct category and current notification.",
+        "hi": {
+          "text": "न्यूनतम वेतन राज्य, काम के प्रकार, कौशल श्रेणी और लागू तारीख पर निर्भर हो सकता है। सही श्रेणी और मौजूदा सूचना की जाँच होने तक राज्य की कोई दर नहीं दी गई है।",
+          "reviewed": false
+        },
+        "mr": {
+          "text": "किमान वेतन राज्य, कामाचा प्रकार, कौशल्य श्रेणी आणि लागू तारखेवर अवलंबून असू शकते. योग्य श्रेणी व सध्याची अधिसूचना तपासेपर्यंत राज्याचा दर दिलेला नाही.",
+          "reviewed": false
+        }
+      },
+      "worker_explanation": {
+        "en": "Ask which state minimum-wage notice, work category and skill level your employer used to set your pay. Keep a written record of the answer.",
+        "hi": {
+          "text": "पूछें कि आपका वेतन तय करते समय नियोक्ता ने राज्य की कौन-सी न्यूनतम वेतन सूचना, काम की श्रेणी और कौशल स्तर माना। जवाब लिखित में रखें।",
+          "reviewed": false
+        },
+        "mr": {
+          "text": "तुमचे वेतन ठरवताना नियोक्त्याने राज्याची कोणती किमान वेतन अधिसूचना, कामाचा प्रकार आणि कौशल्य पातळी वापरली ते विचारा. उत्तराची लेखी नोंद ठेवा.",
+          "reviewed": false
+        }
+      },
+      "applies_if": {
+        "contract_types": ["employee_fixed", "employee_permanent"]
+      },
+      "calculation": {
+        "type": "state_minimum_wage_check",
+        "wage_basis": "gross_monthly_salary"
+      },
+      "source_law": "Minimum Wages Act, 1948 / Code on Wages, 2019; applicable state notification",
+      "source_section": "State notification TO VERIFY",
+      "last_verified": "2026-10-12",
+      "confidence": "low",
+      "effective_from": "TO VERIFY",
+      "volatility": "high",
+      "drift_assumption": {
+        "annual_change_low_pct": 0,
+        "annual_change_high_pct": 10,
+        "basis": "ASSUMPTION - TO VERIFY"
+      },
+      "refer_to_professional_if": "Scheduled employment, skill level, zone, variable dearness allowance or current state notification are uncertain."
+    },
+    {
+      "id": "posh_internal_committee",
+      "area": "posh",
+      "name": {
+        "en": "POSH Internal Committee applicability",
+        "hi": {
+          "text": "पीओएसएच आंतरिक समिति की लागू होने की जाँच",
+          "reviewed": false
+        },
+        "mr": {
+          "text": "पीओएसएच अंतर्गत समिती लागू होण्याची तपासणी",
+          "reviewed": false
+        }
+      },
+      "note": {
+        "en": "The project headcount is only a screening signal; the legal threshold is based on the workplace and requires confirmation. Any planning allowance is supplied by the user and is not an asserted statutory fee.",
+        "hi": {
+          "text": "परियोजना में कर्मचारियों की संख्या केवल शुरुआती संकेत है; कानूनी सीमा कार्यस्थल पर निर्भर है और इसकी पुष्टि करनी होगी। योजना का कोई भी खर्च उपयोगकर्ता देता है; इसे कानूनी शुल्क नहीं माना गया है।",
+          "reviewed": false
+        },
+        "mr": {
+          "text": "प्रकल्पातील कर्मचारी संख्या हा फक्त प्राथमिक संकेत आहे; कायदेशीर मर्यादा कामाच्या ठिकाणावर अवलंबून असून तिची खात्री आवश्यक आहे. नियोजनासाठीचा खर्च वापरकर्ता देतो; तो वैधानिक शुल्क असल्याचा दावा नाही.",
+          "reviewed": false
+        }
+      },
+      "worker_explanation": {
+        "en": "Ask how to report workplace sexual harassment safely, who is on the Internal Committee if one is required, and what support is available.",
+        "hi": {
+          "text": "पूछें कि कार्यस्थल पर यौन उत्पीड़न की शिकायत सुरक्षित रूप से कैसे करें, ज़रूरत होने पर आंतरिक समिति में कौन है और क्या मदद मिल सकती है।",
+          "reviewed": false
+        },
+        "mr": {
+          "text": "कामाच्या ठिकाणी लैंगिक छळाची तक्रार सुरक्षितपणे कशी करावी, आवश्यक असल्यास अंतर्गत समितीत कोण आहे आणि कोणती मदत मिळेल ते विचारा.",
+          "reviewed": false
+        }
+      },
+      "applies_if": {
+        "screening_headcount": {
+          "value": 10,
+          "last_verified": "2026-10-12"
+        }
+      },
+      "calculation": {
+        "type": "screening_only"
+      },
+      "source_law": "Sexual Harassment of Women at Workplace (Prevention, Prohibition and Redressal) Act, 2013",
+      "source_section": "TO VERIFY",
+      "last_verified": "2026-10-12",
+      "confidence": "low",
+      "effective_from": "TO VERIFY",
+      "volatility": "medium",
+      "drift_assumption": {
+        "annual_change_low_pct": 0,
+        "annual_change_high_pct": 5,
+        "basis": "ASSUMPTION - TO VERIFY"
+      },
+      "refer_to_professional_if": "Workplace boundaries, employee count, Internal Committee constitution or policy requirements are uncertain."
+    },
+    {
+      "id": "worker_classification",
+      "area": "classification",
+      "name": {
+        "en": "Worker classification risk signals",
+        "hi": {
+          "text": "कामगार के वर्गीकरण के जोखिम के संकेत",
+          "reviewed": false
+        },
+        "mr": {
+          "text": "कामगार वर्गीकरणातील जोखमीचे संकेत",
+          "reviewed": false
+        }
+      },
+      "note": {
+        "en": "Indicators describe work arrangements only. They do not determine legal status or prove that a person is an employee.",
+        "hi": {
+          "text": "ये संकेत केवल काम की व्यवस्था बताते हैं। ये कानूनी स्थिति तय नहीं करते और न ही यह साबित करते हैं कि कोई व्यक्ति कर्मचारी है।",
+          "reviewed": false
+        },
+        "mr": {
+          "text": "हे संकेत फक्त कामाची व्यवस्था दर्शवतात. ते कायदेशीर दर्जा ठरवत नाहीत किंवा व्यक्ती कर्मचारी असल्याचे सिद्ध करत नाहीत.",
+          "reviewed": false
+        }
+      },
+      "worker_explanation": {
+        "en": "A consultant or volunteer label does not settle your legal status. Ask for clear written terms and independent advice if the day-to-day work feels like regular directed employment.",
+        "hi": {
+          "text": "सलाहकार या स्वयंसेवक का नाम आपकी कानूनी स्थिति तय नहीं करता। लिखित शर्तें साफ़ माँगें; रोज़ का काम नियमित निर्देशों के साथ कर्मचारी जैसा लगे तो स्वतंत्र सलाह लें।",
+          "reviewed": false
+        },
+        "mr": {
+          "text": "सल्लागार किंवा स्वयंसेवक हे नाव तुमचा कायदेशीर दर्जा ठरवत नाही. लेखी अटी स्पष्ट मागा; रोजचे काम नियमित निर्देशांसह कर्मचाऱ्यासारखे वाटल्यास स्वतंत्र सल्ला घ्या.",
+          "reviewed": false
+        }
+      },
+      "applies_if": {},
+      "calculation": {
+        "type": "indicator_count",
+        "signals": {
+          "hours_at_least_weekly": {
+            "value": 20,
+            "last_verified": "2026-10-12"
+          },
+          "duration_at_least_months": {
+            "value": 6,
+            "last_verified": "2026-10-12"
+          },
+          "regular_payment_field": "regularPayment",
+          "control_field": "controlledByOrganization"
+        }
+      },
+      "source_law": "Fact-specific employment classification; applicable Indian statutes and case law",
+      "source_section": "No single test asserted; professional review required",
+      "last_verified": "2026-10-12",
+      "confidence": "low",
+      "effective_from": "TO VERIFY",
+      "volatility": "high",
+      "drift_assumption": {
+        "annual_change_low_pct": 0,
+        "annual_change_high_pct": 10,
+        "basis": "ASSUMPTION - TO VERIFY"
+      },
+      "refer_to_professional_if": "Contract labels differ from the actual level of control, integration, payment or ongoing service."
+    }
+  ],
+  "state_minimum_wages": {
+    "MH": {
+      "last_verified": "2026-10-12",
+      "rates": []
+    }
+  }
+}

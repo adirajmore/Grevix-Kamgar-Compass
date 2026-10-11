@@ -1,6 +1,7 @@
 import { initializeState, setLanguage, setNotice } from "./src/state.js";
-import { mountApplication } from "./src/ui.js";
+import { mountApplication, setOfflineStatus } from "./src/ui.js";
 import { mountWelcome } from "./src/welcome.js";
+import { validateImportedRulePack } from "./src/rulePacks.js";
 
 const root = document.querySelector("#app");
 const welcomeRoot = document.querySelector("#welcome-root");
@@ -41,24 +42,44 @@ async function startApplication() {
   }
 
   try {
-    const [hindi, marathi, rulesData, sampleProject] = await Promise.all([
+    const [
+      hindi,
+      marathi,
+      rulesData,
+      sampleProject,
+      ruralDemoProject,
+      ruralOldRulesPack,
+      ruralNewRulesPack
+    ] = await Promise.all([
       readJson(localeFiles[1][1]),
       readJson(localeFiles[2][1]),
       readJson("data/rules.json"),
-      readJson("data/sample.json")
+      readJson("data/sample.json"),
+      readJson("data/sample-rural-offline.json"),
+      readJson("data/rules-pack-old.json"),
+      readJson("data/rules-pack-new.json")
     ]);
+    const storedRulePack = await readStoredRulePack(rulesData);
+    const activeRulesData = storedRulePack.pack || rulesData;
     const locales = { en: english, hi: hindi, mr: marathi };
     const storedLanguage = readStoredLanguage();
     const state = initializeState(
       sampleProject,
-      rulesData,
+      activeRulesData,
       storedLanguage,
-      navigator.languages
+      navigator.languages,
+      rulesData
     );
+    if (storedRulePack.error) {
+      setNotice("rules.packLoadError");
+    }
     let welcomeController;
     mountApplication(root, {
       locales,
       sampleProject,
+      ruralDemoProject,
+      ruralOldRulesPack,
+      ruralNewRulesPack,
       onAbout: () => welcomeController.open()
     });
     welcomeController = mountWelcome(
@@ -76,6 +97,9 @@ async function startApplication() {
         mountApplication(root, {
           locales,
           sampleProject,
+          ruralDemoProject,
+          ruralOldRulesPack,
+          ruralNewRulesPack,
           onAbout: () => welcomeController.open()
         });
       },
@@ -84,10 +108,14 @@ async function startApplication() {
         mountApplication(root, {
           locales,
           sampleProject,
+          ruralDemoProject,
+          ruralOldRulesPack,
+          ruralNewRulesPack,
           onAbout: () => welcomeController.open()
         });
       }
     );
+    setupOfflineSupport();
   } catch (error) {
     showLoadError({
       title: english["error.title"],
@@ -96,6 +124,50 @@ async function startApplication() {
       cause: error.message
     });
   }
+}
+
+async function readStoredRulePack(bundledRulesData) {
+  let serialized;
+  try {
+    serialized = localStorage.getItem("kamgar-compass-rules-pack");
+  } catch (error) {
+    console.error("Kamgar Compass could not read the saved rules pack.", error);
+    return { pack: null, error };
+  }
+  if (!serialized) {
+    return { pack: null, error: null };
+  }
+  try {
+    const pack = JSON.parse(serialized);
+    await validateImportedRulePack(pack, bundledRulesData);
+    return { pack, error: null };
+  } catch (error) {
+    console.error(
+      "Kamgar Compass could not validate the saved rules pack.",
+      error
+    );
+    return { pack: null, error };
+  }
+}
+
+function setupOfflineSupport() {
+  let serviceWorkerAvailable = "serviceWorker" in navigator;
+  if (!navigator.onLine) {
+    setOfflineStatus("offline.working");
+  }
+  window.addEventListener("offline", () => setOfflineStatus("offline.working"));
+  window.addEventListener("online", () =>
+    setOfflineStatus(serviceWorkerAvailable ? "" : "offline.unavailable")
+  );
+  if (!serviceWorkerAvailable) {
+    setOfflineStatus("offline.unavailable");
+    return;
+  }
+  navigator.serviceWorker.register("./service-worker.js").catch((error) => {
+    serviceWorkerAvailable = false;
+    console.error("Kamgar Compass offline support could not start.", error);
+    setOfflineStatus("offline.unavailable");
+  });
 }
 
 function readStoredLanguage() {

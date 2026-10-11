@@ -1,8 +1,10 @@
-import { SUPPORTED_LANGUAGES } from "./constants.js";
-import { calculateProject } from "./engine.js";
+import { MAX_SAVED_SCENARIOS, SUPPORTED_LANGUAGES } from "./constants.js";
+import { calculateProject, calculateReservePlan } from "./engine.js";
+import { applyVerificationDateOverride, getAsOfDate } from "./freshness.js";
 import { validateProject } from "./validation.js";
 
 let applicationState = null;
+let nextScenarioId = 1;
 
 /**
  * Create the single application state from project data and browser preferences.
@@ -16,8 +18,10 @@ export function initializeState(
   sampleProject,
   rulesData,
   storedLanguage,
-  browserLanguages
+  browserLanguages,
+  bundledRulesData = rulesData
 ) {
+  nextScenarioId = 1;
   const browserLanguage = browserLanguages
     .map((language) => language.toLowerCase().split("-")[0])
     .find((language) => SUPPORTED_LANGUAGES.includes(language));
@@ -26,16 +30,29 @@ export function initializeState(
     : browserLanguage || "en";
   applicationState = {
     project: structuredClone(sampleProject),
-    rulesData,
+    bundledRulesData,
+    baseRulesData: rulesData,
+    rulesData: applyVerificationDateOverride(rulesData, null),
     language,
     funderLanguage: "en",
+    asOfDate: getAsOfDate(),
+    verifiedOnDate: "",
+    limitedInformation: false,
+    reconciliation: null,
+    savedScenarios: [],
+    reserveMonthsRemaining: sampleProject.grantDurationMonths,
+    reserveStartingAmount: 0,
+    reservePlan: null,
     activeView: "ngo",
     selectedRoleId: sampleProject.roles[0]?.id || null,
     timelineMonth: sampleProject.grantDurationMonths,
     validation: validateProject(sampleProject),
-    calculation: calculateProject(sampleProject, rulesData),
+    calculation: calculateProject(sampleProject, rulesData, {
+      asOfDate: getAsOfDate()
+    }),
     notice: ""
   };
+  refreshReservePlan();
   return getApplicationState();
 }
 
@@ -57,9 +74,22 @@ export function updateProject(project) {
   applicationState = {
     ...applicationState,
     project: structuredClone(project),
+    reconciliation: null,
+    reserveMonthsRemaining: Number.isSafeInteger(project.grantDurationMonths)
+      ? Math.max(
+          1,
+          Math.min(
+            applicationState.reserveMonthsRemaining,
+            project.grantDurationMonths
+          )
+        )
+      : applicationState.reserveMonthsRemaining,
     validation,
     calculation: validation.valid
-      ? calculateProject(validation.value, applicationState.rulesData)
+      ? calculateProject(validation.value, applicationState.rulesData, {
+          asOfDate: applicationState.asOfDate,
+          forceCautious: applicationState.limitedInformation
+        })
       : null,
     selectedRoleId:
       Array.isArray(project.roles) &&
@@ -71,6 +101,132 @@ export function updateProject(project) {
       project.grantDurationMonths + 3
     )
   };
+  refreshReservePlan();
+  return getApplicationState();
+}
+
+/**
+ * Update the dates and limited-information choice used for freshness estimates.
+ * @param {object} options User-selected freshness options.
+ * @returns {object} Updated state snapshot.
+ */
+export function setFreshnessOptions(options) {
+  const asOfDate = getAsOfDate(options.asOfDate);
+  const verifiedOnDate = options.verifiedOnDate
+    ? getAsOfDate(options.verifiedOnDate)
+    : "";
+  const limitedInformation = Boolean(options.limitedInformation);
+  const rulesData = applyVerificationDateOverride(
+    applicationState.baseRulesData,
+    verifiedOnDate
+  );
+  const validation = validateProject(applicationState.project);
+  applicationState = {
+    ...applicationState,
+    rulesData,
+    asOfDate,
+    verifiedOnDate,
+    limitedInformation,
+    validation,
+    calculation: validation.valid
+      ? calculateProject(validation.value, rulesData, {
+          asOfDate,
+          forceCautious: limitedInformation
+        })
+      : null,
+    notice: ""
+  };
+  refreshReservePlan();
+  return getApplicationState();
+}
+
+/**
+ * Replace the active rule pack without modifying the bundled fallback.
+ * @param {object} rulesData Validated imported pack.
+ * @returns {object} Updated state snapshot.
+ */
+export function setRulesPack(rulesData) {
+  const activeRulesData = applyVerificationDateOverride(
+    rulesData,
+    applicationState.verifiedOnDate
+  );
+  const validation = validateProject(applicationState.project);
+  applicationState = {
+    ...applicationState,
+    baseRulesData: rulesData,
+    rulesData: activeRulesData,
+    validation,
+    calculation: validation.valid
+      ? calculateProject(validation.value, activeRulesData, {
+          asOfDate: applicationState.asOfDate,
+          forceCautious: applicationState.limitedInformation
+        })
+      : null,
+    notice: ""
+  };
+  refreshReservePlan();
+  return getApplicationState();
+}
+
+/**
+ * Update the months and existing reserve used by the Grant Cliff reserve planner.
+ * @param {{monthsRemaining: number, startingReserve: number}} options Planner inputs.
+ * @returns {object} Updated state snapshot.
+ */
+export function setReservePlanOptions(options) {
+  const reserveMonthsRemaining = options.monthsRemaining;
+  const reserveStartingAmount = options.startingReserve;
+  const reservePlan = applicationState.calculation
+    ? calculateReservePlan(
+        applicationState.calculation.cliff,
+        applicationState.calculation.uncertainty?.cliff ?? null,
+        {
+          monthsRemaining: reserveMonthsRemaining,
+          startingReserve: reserveStartingAmount,
+          asOfDate: applicationState.asOfDate
+        }
+      )
+    : null;
+  applicationState = {
+    ...applicationState,
+    reserveMonthsRemaining,
+    reserveStartingAmount,
+    reservePlan,
+    notice: ""
+  };
+  return getApplicationState();
+}
+
+function refreshReservePlan() {
+  const calculation = applicationState.calculation;
+  applicationState.reservePlan = calculation
+    ? calculateReservePlan(
+        calculation.cliff,
+        calculation.uncertainty?.cliff ?? null,
+        {
+          monthsRemaining: applicationState.reserveMonthsRemaining,
+          startingReserve: applicationState.reserveStartingAmount,
+          asOfDate: applicationState.asOfDate
+        }
+      )
+    : null;
+}
+
+/**
+ * Restore the original bundled rule pack.
+ * @returns {object} Updated state snapshot.
+ */
+export function revertRulesPack() {
+  return setRulesPack(applicationState.bundledRulesData);
+}
+
+/**
+ * Store the result of comparing an earlier cautious estimate with a new pack.
+ * @param {object|null} reconciliation Pack comparison summary.
+ * @returns {object} Updated state snapshot.
+ */
+export function setReconciliation(reconciliation) {
+  applicationState = { ...applicationState, reconciliation };
   return getApplicationState();
 }
 
@@ -81,6 +237,56 @@ export function updateProject(project) {
  */
 export function loadProject(project) {
   return updateProject(structuredClone(project));
+}
+
+/**
+ * Save the current valid project as a named comparison scenario.
+ * @param {string} name Scenario label.
+ * @returns {object} Updated state snapshot.
+ */
+export function saveScenario(name) {
+  const scenarioName = String(name).trim();
+  if (!scenarioName) {
+    throw new TypeError("Enter a name for this scenario.");
+  }
+  if (scenarioName.length > 80) {
+    throw new TypeError("Scenario names must be 80 characters or fewer.");
+  }
+  if (applicationState.savedScenarios.length >= MAX_SAVED_SCENARIOS) {
+    throw new RangeError("No more than three scenarios can be saved.");
+  }
+  if (!applicationState.validation.valid) {
+    throw new TypeError("A valid project is required to save a scenario.");
+  }
+  applicationState = {
+    ...applicationState,
+    savedScenarios: [
+      ...applicationState.savedScenarios,
+      {
+        id: `scenario-${nextScenarioId++}`,
+        name: scenarioName,
+        project: structuredClone(applicationState.validation.value)
+      }
+    ],
+    notice: ""
+  };
+  return getApplicationState();
+}
+
+/**
+ * Remove a saved project scenario by its stable in-session identifier.
+ * @param {string} scenarioId Saved scenario identifier.
+ * @returns {object} Updated state snapshot.
+ */
+export function removeScenario(scenarioId) {
+  applicationState = {
+    ...applicationState,
+    savedScenarios: applicationState.savedScenarios.filter(
+      (scenario) => scenario.id !== scenarioId
+    ),
+    notice: ""
+  };
+  return getApplicationState();
 }
 
 /**

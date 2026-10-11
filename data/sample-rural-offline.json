@@ -1,0 +1,67 @@
+{
+  "name": "Rural NGO Offline Demo — illustrative project",
+  "state": "MH",
+  "grantStartDate": "2026-10-01",
+  "grantDurationMonths": 12,
+  "grantAmount": 7200000,
+  "complianceAllowance": 0,
+  "poshMonthlyCostPerWorker": 0,
+  "roles": [
+    {
+      "id": "field-facilitators",
+      "title": "Field facilitators",
+      "headcount": 3,
+      "monthlySalary": 18000,
+      "genderMix": "women",
+      "contractType": "employee_fixed",
+      "weeklyHours": 40,
+      "regularPayment": true,
+      "controlledByOrganization": true,
+      "startMonth": 1,
+      "endMonth": 12,
+      "skillCategory": ""
+    },
+    {
+      "id": "community-organizers",
+      "title": "Community organizers",
+      "headcount": 2,
+      "monthlySalary": 16000,
+      "genderMix": "mixed",
+      "contractType": "employee_fixed",
+      "weeklyHours": 40,
+      "regularPayment": true,
+      "controlledByOrganization": true,
+      "startMonth": 1,
+      "endMonth": 12,
+      "skillCategory": ""
+    },
+    {
+      "id": "project-coordinator",
+      "title": "Project coordinator",
+      "headcount": 1,
+      "monthlySalary": 28000,
+      "genderMix": "unspecified",
+      "contractType": "employee_fixed",
+      "weeklyHours": 40,
+      "regularPayment": true,
+      "controlledByOrganization": true,
+      "startMonth": 1,
+      "endMonth": 12,
+      "skillCategory": ""
+    },
+    {
+      "id": "community-volunteers",
+      "title": "Community volunteers with regular stipend",
+      "headcount": 2,
+      "monthlySalary": 5000,
+      "genderMix": "women",
+      "contractType": "volunteer_stipend",
+      "weeklyHours": 24,
+      "regularPayment": true,
+      "controlledByOrganization": true,
+      "startMonth": 1,
+      "endMonth": 12,
+      "skillCategory": ""
+    }
+  ]
+}

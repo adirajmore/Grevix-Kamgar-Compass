@@ -3,11 +3,20 @@ export const GRANT_DURATION_MIN_MONTHS = 1;
 export const GRANT_DURATION_MAX_MONTHS = 60;
 export const MAX_HEADCOUNT = 1000;
 export const MAX_ROLES = 100;
+export const MAX_SAVED_SCENARIOS = 3;
+export const MAX_RESERVE_MONTHS = 60;
 export const MAX_MONTHLY_SALARY_RUPEES = 100000000;
 export const MAX_GRANT_AMOUNT_RUPEES = 1000000000000;
 export const MAX_COMPLIANCE_ALLOWANCE_RUPEES = 1000000000000;
 export const MAX_POSH_PLANNING_COST_RUPEES = 100000000;
 export const UNVERIFIED_DATE = "TO VERIFY";
+export const RULE_FRESHNESS_THRESHOLDS = {
+  low: { agingDays: 365, staleDays: 730, expiredDays: 1095 },
+  medium: { agingDays: 180, staleDays: 365, expiredDays: 730 },
+  high: { agingDays: 90, staleDays: 180, expiredDays: 365 }
+};
+export const DRIFT_ASSUMPTION_BASIS = "ASSUMPTION - TO VERIFY";
+export const RULE_PACK_SCHEMA_VERSION = 1;
 export const MAX_WEEKLY_HOURS = 168;
 export const MAX_ROLE_SALARY_SLIDER = 300000;
 export const POST_GRANT_MONTHS = 3;

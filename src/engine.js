@@ -1,7 +1,10 @@
 import {
   HUNDRED_PERCENT_BASIS_POINTS,
-  POST_GRANT_MONTHS
+  MAX_RESERVE_MONTHS,
+  POST_GRANT_MONTHS,
+  RULE_FRESHNESS_THRESHOLDS
 } from "./constants.js";
+import { classifyFreshness, getAsOfDate, getRuleAgeDays } from "./freshness.js";
 
 const EMPLOYEE_CONTRACTS = new Set(["employee_fixed", "employee_permanent"]);
 const ESTIMATED_COST_RULES = new Set(["epf", "esi", "gratuity", "posh"]);
@@ -436,19 +439,520 @@ export function calculateGrantCliff(project, evaluations, costs) {
   };
 }
 
+function ruleIsRelevant(ruleId, evaluations) {
+  return evaluations.some((evaluation) =>
+    evaluation.items.some(
+      (item) =>
+        item.ruleId === ruleId &&
+        (item.status === "needs_verification" || item.status === "pending")
+    )
+  );
+}
+
+function estimateRuleFactors(rule, asOfDate, thresholds) {
+  const freshness = classifyFreshness(rule, asOfDate, thresholds);
+  if (freshness === "fresh") {
+    return {
+      freshness,
+      ageDays: getRuleAgeDays(rule, asOfDate),
+      factors: [1, 1, 1]
+    };
+  }
+  const ageDays = getRuleAgeDays(rule, asOfDate);
+  const assumption = rule.drift_assumption;
+  const lowPct = assumption?.annual_change_low_pct;
+  const highPct = assumption?.annual_change_high_pct;
+  if (
+    ageDays === null ||
+    !Number.isFinite(lowPct) ||
+    !Number.isFinite(highPct) ||
+    lowPct < 0 ||
+    highPct < lowPct
+  ) {
+    return { freshness, ageDays, factors: null };
+  }
+  const annualFraction = ageDays / 36500;
+  const lowFactor = 1 + (lowPct * annualFraction) / 100;
+  const highFactor = 1 + (highPct * annualFraction) / 100;
+  return {
+    freshness,
+    ageDays,
+    factors: [lowFactor, (lowFactor + highFactor) / 2, highFactor]
+  };
+}
+
+function scaleEvaluationCosts(evaluations, rulesById, factorIndex) {
+  return evaluations.map((evaluation) => ({
+    ...evaluation,
+    items: evaluation.items.map((item) => {
+      const factors = rulesById.get(item.ruleId)?.factors;
+      if (!factors || item.employerCost === 0) {
+        return item;
+      }
+      return {
+        ...item,
+        employerCost: Math.round(item.employerCost * factors[factorIndex]),
+        ...(Number.isSafeInteger(item.accruedLiability)
+          ? {
+              accruedLiability: Math.round(
+                item.accruedLiability * factors[factorIndex]
+              )
+            }
+          : {})
+      };
+    })
+  }));
+}
+
+/**
+ * Estimate uncertainty ranges without modifying the standard calculation.
+ * Unverified exposures without a usable age remain explicitly unquantifiable.
+ * @param {object} project Normalized project inputs.
+ * @param {object} rulesData Editable rules data.
+ * @param {object[]} evaluations Output from evaluateRules.
+ * @param {object} costs Output from calculateStaffCosts.
+ * @param {object} options Date and cautious-mode options.
+ * @returns {object|null} Cautious estimates, or null when all relevant rules are fresh.
+ */
+function calculateUncertainty(
+  project,
+  rulesData,
+  evaluations,
+  costs,
+  { asOfDate, forceCautious = false, thresholds = RULE_FRESHNESS_THRESHOLDS }
+) {
+  const date = getAsOfDate(asOfDate);
+  const relevantRules = rulesData.rules.filter((rule) =>
+    ruleIsRelevant(rule.id, evaluations)
+  );
+  const rulesById = new Map();
+  const ruleDetails = [];
+  for (const rule of relevantRules) {
+    const currentCost = evaluations
+      .flatMap((evaluation) => evaluation.items)
+      .filter((item) => item.ruleId === rule.id)
+      .reduce((total, item) => total + item.employerCost, 0);
+    const hasMissingFinancialInput = evaluations.some((evaluation) =>
+      evaluation.items.some(
+        (item) =>
+          item.ruleId === rule.id &&
+          item.status === "pending" &&
+          ["epf", "esi", "minimum_wage", "posh"].includes(rule.area)
+      )
+    );
+    const estimate = hasMissingFinancialInput
+      ? { freshness: "unverified", ageDays: null, factors: null }
+      : estimateRuleFactors(rule, date, thresholds);
+    const hasUnknownExposure =
+      hasMissingFinancialInput ||
+      (estimate.factors === null && currentCost > 0);
+    rulesById.set(rule.id, {
+      ...estimate,
+      factors: estimate.factors || [1, 1, 1],
+      hasUnknownExposure
+    });
+    ruleDetails.push({
+      ruleId: rule.id,
+      area: rule.area,
+      freshness: estimate.freshness,
+      ageDays: estimate.ageDays,
+      currentCost,
+      assumption: rule.drift_assumption
+        ? {
+            lowPct: rule.drift_assumption.annual_change_low_pct,
+            highPct: rule.drift_assumption.annual_change_high_pct,
+            basis: rule.drift_assumption.basis
+          }
+        : null,
+      unquantifiable: hasUnknownExposure
+    });
+  }
+
+  const cautious =
+    forceCautious ||
+    relevantRules.some((rule) => rulesById.get(rule.id).freshness !== "fresh");
+  if (!cautious) {
+    return null;
+  }
+
+  const scenarios = [0, 1, 2].map((factorIndex) => {
+    const scaled = scaleEvaluationCosts(evaluations, rulesById, factorIndex);
+    const scenarioCosts = calculateStaffCosts(project, scaled);
+    return {
+      costs: scenarioCosts,
+      gap: calculateComplianceGap(project, scenarioCosts),
+      cliff: calculateGrantCliff(project, scaled, scenarioCosts)
+    };
+  });
+  const unquantifiable = ruleDetails.some((rule) => rule.unquantifiable);
+  const gapScores = scenarios
+    .map((scenario) => scenario.gap.scoreBasisPoints)
+    .filter(Number.isFinite);
+  const quantifiedGapLow = gapScores.length > 0 ? Math.min(...gapScores) : null;
+  const quantifiedGapHigh =
+    gapScores.length > 0 ? Math.max(...gapScores) : null;
+  const gap = {
+    low: unquantifiable ? null : quantifiedGapLow,
+    expected: scenarios[1].gap.scoreBasisPoints,
+    high: unquantifiable ? null : quantifiedGapHigh,
+    quantified: {
+      low: quantifiedGapLow,
+      expected: scenarios[1].gap.scoreBasisPoints,
+      high: quantifiedGapHigh
+    }
+  };
+
+  return {
+    mode: "cautious",
+    asOfDate: date,
+    limitedInformation: forceCautious,
+    rules: ruleDetails,
+    unquantifiableRuleIds: ruleDetails
+      .filter((rule) => rule.unquantifiable)
+      .map((rule) => rule.ruleId),
+    costs: {
+      low: scenarios[0].costs.estimatedEmployerCosts,
+      expected: scenarios[1].costs.estimatedEmployerCosts,
+      high: unquantifiable ? null : scenarios[2].costs.estimatedEmployerCosts,
+      recommended: unquantifiable
+        ? null
+        : scenarios[2].costs.estimatedEmployerCosts,
+      quantified: {
+        low: scenarios[0].costs.estimatedEmployerCosts,
+        expected: scenarios[1].costs.estimatedEmployerCosts,
+        high: scenarios[2].costs.estimatedEmployerCosts
+      },
+      roles: costs.roles.map((role, index) => ({
+        roleId: role.roleId,
+        low: scenarios[0].costs.roles[index].employerCosts,
+        expected: scenarios[1].costs.roles[index].employerCosts,
+        high: unquantifiable
+          ? null
+          : scenarios[2].costs.roles[index].employerCosts
+      }))
+    },
+    gap,
+    cliff: {
+      low: scenarios[0].cliff.unfundedLiabilityEstimate,
+      expected: scenarios[1].cliff.unfundedLiabilityEstimate,
+      high: unquantifiable
+        ? null
+        : scenarios[2].cliff.unfundedLiabilityEstimate,
+      quantified: {
+        low: scenarios[0].cliff.unfundedLiabilityEstimate,
+        expected: scenarios[1].cliff.unfundedLiabilityEstimate,
+        high: scenarios[2].cliff.unfundedLiabilityEstimate
+      }
+    }
+  };
+}
+
 /**
  * Run the full deterministic calculation pipeline for a normalized project.
  * @param {object} project Normalized project inputs.
  * @param {object} rulesData Rules and state-specific minimum-wage records.
+ * @param {object} [options] Optional uncertainty estimate settings.
  * @returns {object} Rule evaluations, costs, gap score, and grant-cliff timeline.
  */
-export function calculateProject(project, rulesData) {
+export function calculateProject(project, rulesData, options = {}) {
   const evaluations = evaluateRules(project, rulesData);
   const costs = calculateStaffCosts(project, evaluations);
-  return {
+  const result = {
     evaluations,
     costs,
     gap: calculateComplianceGap(project, costs),
     cliff: calculateGrantCliff(project, evaluations, costs)
+  };
+  const uncertainty = calculateUncertainty(
+    project,
+    rulesData,
+    evaluations,
+    costs,
+    options
+  );
+  return uncertainty ? { ...result, uncertainty } : result;
+}
+
+/**
+ * Calculate monthly savings needed to cover the existing Grant Cliff liability.
+ * @param {object} cliff Standard Grant Cliff calculation.
+ * @param {object|null} uncertainCliff Optional cautious liability range.
+ * @param {{monthsRemaining: number, startingReserve?: number, asOfDate?: string}} options Planner inputs.
+ * @returns {object} Monthly set-aside bands, projected progress, and sufficiency dates.
+ */
+export function calculateReservePlan(cliff, uncertainCliff, options) {
+  const monthsRemaining = options?.monthsRemaining;
+  const startingReserve = options?.startingReserve ?? 0;
+  if (
+    !Number.isSafeInteger(monthsRemaining) ||
+    monthsRemaining < 1 ||
+    monthsRemaining > MAX_RESERVE_MONTHS
+  ) {
+    throw new TypeError(
+      `Months remaining must be a whole number from 1 to ${MAX_RESERVE_MONTHS}.`
+    );
+  }
+  if (!Number.isSafeInteger(startingReserve) || startingReserve < 0) {
+    throw new TypeError(
+      "Starting reserve must be a non-negative whole amount."
+    );
+  }
+  const asOfDate = getAsOfDate(options.asOfDate);
+  const liability = {
+    low: uncertainCliff?.low ?? cliff.unfundedLiabilityEstimate,
+    expected: uncertainCliff?.expected ?? cliff.unfundedLiabilityEstimate,
+    high:
+      uncertainCliff === null || uncertainCliff === undefined
+        ? cliff.unfundedLiabilityEstimate
+        : uncertainCliff?.high
+  };
+  for (const [band, amount] of Object.entries(liability)) {
+    if (amount !== null && (!Number.isSafeInteger(amount) || amount < 0)) {
+      throw new TypeError(
+        `The ${band} liability must be a non-negative amount.`
+      );
+    }
+  }
+  if (
+    liability.low === null ||
+    liability.expected === null ||
+    (liability.high !== null &&
+      (liability.low > liability.expected ||
+        liability.expected > liability.high))
+  ) {
+    throw new TypeError("Reserve liability range is invalid.");
+  }
+
+  const monthlySetAside = Object.fromEntries(
+    Object.entries(liability).map(([band, amount]) => [
+      band,
+      amount === null
+        ? null
+        : Math.ceil(Math.max(0, amount - startingReserve) / monthsRemaining)
+    ])
+  );
+  const sufficientBy = Object.fromEntries(
+    Object.entries(liability).map(([band, amount]) => {
+      const monthly = monthlySetAside[band];
+      if (amount === null || monthly === null) {
+        return [band, null];
+      }
+      const shortfall = Math.max(0, amount - startingReserve);
+      const monthsToSufficiency =
+        shortfall === 0 ? 0 : Math.ceil(shortfall / monthly);
+      return [band, addCalendarMonths(asOfDate, monthsToSufficiency)];
+    })
+  );
+  const progress = Array.from({ length: monthsRemaining + 1 }, (_, month) => {
+    const balance = Object.fromEntries(
+      Object.entries(monthlySetAside).map(([band, monthly]) => [
+        band,
+        monthly === null ? null : startingReserve + monthly * month
+      ])
+    );
+    const percentage = Object.fromEntries(
+      Object.entries(balance).map(([band, amount]) => [
+        band,
+        amount === null
+          ? null
+          : liability[band] === 0
+            ? 100
+            : Math.min(100, (amount / liability[band]) * 100)
+      ])
+    );
+    return {
+      month,
+      date: addCalendarMonths(asOfDate, month),
+      balance,
+      percentage
+    };
+  });
+  return {
+    asOfDate,
+    monthsRemaining,
+    startingReserve,
+    liability,
+    monthlySetAside,
+    sufficientBy,
+    progress
+  };
+}
+
+/**
+ * Build a role-specific, non-determinative Worker Rights Card data model.
+ * @param {object} project Normalized project inputs.
+ * @param {string} roleId Selected role identifier.
+ * @param {object} calculation Project calculation output.
+ * @param {object} rulesData Active rule pack.
+ * @returns {object|null} Card data based on the role's last modeled work month.
+ */
+export function buildWorkerRightsCard(project, roleId, calculation, rulesData) {
+  const role = project.roles.find((item) => item.id === roleId);
+  if (!role || !calculation) {
+    return null;
+  }
+  const lastWorkingMonth = Math.min(role.endMonth, project.grantDurationMonths);
+  const evaluation = calculation.evaluations.find(
+    (item) => item.roleId === role.id && item.month === lastWorkingMonth
+  );
+  const rulesById = new Map(rulesData.rules.map((rule) => [rule.id, rule]));
+  const protections = (evaluation?.items || [])
+    .map((decision) => {
+      const rule = rulesById.get(decision.ruleId);
+      if (!rule) {
+        return null;
+      }
+      return {
+        ruleId: decision.ruleId,
+        status: decision.status,
+        reason: decision.reason,
+        lastVerified: decision.lastVerified,
+        name: rule.name,
+        workerExplanation: rule.worker_explanation
+      };
+    })
+    .filter(Boolean);
+  return {
+    roleTitle: role.title,
+    lastWorkingMonth,
+    grantDurationMonths: project.grantDurationMonths,
+    possibleProtections: protections.filter(
+      (item) => item.status === "needs_verification"
+    ),
+    notConfirmedProtections: protections.filter(
+      (item) => item.status !== "needs_verification"
+    ),
+    uncertain: Boolean(calculation.uncertainty)
+  };
+}
+
+function addCalendarMonths(isoDate, months) {
+  const [year, month, day] = isoDate.split("-").map(Number);
+  const firstOfTargetMonth = new Date(Date.UTC(year, month - 1 + months, 1));
+  const lastDay = new Date(
+    Date.UTC(
+      firstOfTargetMonth.getUTCFullYear(),
+      firstOfTargetMonth.getUTCMonth() + 1,
+      0
+    )
+  ).getUTCDate();
+  firstOfTargetMonth.setUTCDate(Math.min(day, lastDay));
+  return firstOfTargetMonth.toISOString().slice(0, 10);
+}
+
+/**
+ * Calculate comparable project metrics and deltas from the first saved scenario.
+ * Cautious-mode values use the engine's expected scenario output.
+ * @param {{id: string, name: string, project: object}[]} scenarios Named project snapshots.
+ * @param {object} rulesData Rules used for every comparison.
+ * @param {object} [options] Freshness and cautious-mode options.
+ * @returns {object} Baseline, metrics, per-scenario deltas, and a factual summary.
+ */
+export function compareScenarios(scenarios, rulesData, options = {}) {
+  if (!Array.isArray(scenarios) || scenarios.length === 0) {
+    return { baselineId: null, scenarios: [], summary: null };
+  }
+  const baselineScenario = scenarios[0];
+  const baselineCalculation = calculateProject(
+    baselineScenario.project,
+    rulesData,
+    options
+  );
+  const baselineMetrics = scenarioMetrics(
+    baselineScenario.project,
+    baselineCalculation
+  );
+  const compared = scenarios.map((scenario) => {
+    const calculation =
+      scenario.id === baselineScenario.id
+        ? baselineCalculation
+        : calculateProject(scenario.project, rulesData, options);
+    const metrics = scenarioMetrics(scenario.project, calculation);
+    return {
+      id: scenario.id,
+      name: scenario.name,
+      metrics,
+      delta: {
+        trueCost: metrics.trueCost - baselineMetrics.trueCost,
+        averageMonthlyCost:
+          metrics.averageMonthlyCost - baselineMetrics.averageMonthlyCost,
+        gapScoreBasisPoints:
+          metrics.gapScoreBasisPoints === null ||
+          baselineMetrics.gapScoreBasisPoints === null
+            ? null
+            : metrics.gapScoreBasisPoints - baselineMetrics.gapScoreBasisPoints,
+        unfundedLiability:
+          metrics.unfundedLiability - baselineMetrics.unfundedLiability,
+        classificationWarnings:
+          metrics.classificationWarnings -
+          baselineMetrics.classificationWarnings
+      }
+    };
+  });
+  return {
+    baselineId: baselineScenario.id,
+    scenarios: compared,
+    summary: biggestScenarioChange(compared.slice(1))
+  };
+}
+
+function scenarioMetrics(project, calculation) {
+  const classificationRoles = new Set(
+    calculation.evaluations
+      .flatMap((month) =>
+        month.items.map((item) => ({ ...item, roleId: month.roleId }))
+      )
+      .filter(
+        (item) =>
+          item.ruleId === "worker_classification" && item.signalCount > 0
+      )
+      .map((item) => item.roleId)
+  );
+  return {
+    trueCost: calculation.costs.estimatedTotal,
+    averageMonthlyCost:
+      project.grantDurationMonths > 0
+        ? Math.round(
+            calculation.costs.estimatedTotal / project.grantDurationMonths
+          )
+        : 0,
+    gapScoreBasisPoints: calculation.gap.scoreBasisPoints,
+    unfundedLiability: calculation.cliff.unfundedLiabilityEstimate,
+    classificationWarnings: classificationRoles.size
+  };
+}
+
+function biggestScenarioChange(scenarios) {
+  if (scenarios.length === 0) {
+    return null;
+  }
+  const riskReduction = scenarios
+    .filter((scenario) => scenario.delta.classificationWarnings < 0)
+    .sort(
+      (first, second) =>
+        first.delta.classificationWarnings - second.delta.classificationWarnings
+    )[0];
+  if (riskReduction) {
+    return {
+      type: "classification_reduction",
+      scenarioId: riskReduction.id,
+      averageMonthlyCostDifference: riskReduction.delta.averageMonthlyCost,
+      classificationWarningsRemoved: Math.abs(
+        riskReduction.delta.classificationWarnings
+      ),
+      classificationWarningsChange: riskReduction.delta.classificationWarnings
+    };
+  }
+  const largestCostChange = [...scenarios].sort(
+    (first, second) =>
+      Math.abs(second.delta.averageMonthlyCost) -
+      Math.abs(first.delta.averageMonthlyCost)
+  )[0];
+  return {
+    type: "cost_change",
+    scenarioId: largestCostChange.id,
+    averageMonthlyCostDifference: largestCostChange.delta.averageMonthlyCost,
+    classificationWarningsRemoved: 0,
+    classificationWarningsChange: largestCostChange.delta.classificationWarnings
   };
 }

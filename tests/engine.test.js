@@ -4,7 +4,10 @@ import {
   calculateComplianceGap,
   calculateGrantCliff,
   calculateProject,
+  calculateReservePlan,
   calculateStaffCosts,
+  buildWorkerRightsCard,
+  compareScenarios,
   evaluateRules
 } from "../src/engine.js";
 import { makeProject, makeSampleProject, rulesData } from "./fixtures.js";
@@ -24,6 +27,61 @@ function withStateRate(minimumWage) {
         ]
       }
     }
+  };
+}
+
+function withRuleDates(dateOverrides = {}, driftOverrides = {}) {
+  return {
+    ...rulesData,
+    rules: rulesData.rules.map((rule) => ({
+      ...setVerificationDate(rule, dateOverrides[rule.id] || "2026-10-10"),
+      ...(driftOverrides[rule.id]
+        ? { drift_assumption: driftOverrides[rule.id] }
+        : {})
+    }))
+  };
+}
+
+function setVerificationDate(value, date) {
+  if (Array.isArray(value)) {
+    return value.map((item) => setVerificationDate(item, date));
+  }
+  if (!value || typeof value !== "object") {
+    return value;
+  }
+  return Object.fromEntries(
+    Object.entries(value).map(([key, child]) => [
+      key,
+      key === "last_verified" ? date : setVerificationDate(child, date)
+    ])
+  );
+}
+
+function withFreshMinimumWages(data) {
+  return {
+    ...data,
+    state_minimum_wages: {
+      MH: {
+        last_verified: "2026-10-10",
+        rates: [
+          {
+            skill_category: "unskilled",
+            monthly_minimum_wage: 1,
+            last_verified: "2026-10-10"
+          }
+        ]
+      }
+    }
+  };
+}
+
+function addTestSkillCategories(project) {
+  return {
+    ...project,
+    roles: project.roles.map((role) => ({
+      ...role,
+      skillCategory: "unskilled"
+    }))
   };
 }
 
@@ -324,4 +382,296 @@ test("provides pure intermediate functions for costs, gaps, and cliffs", () => {
   assert.equal(costs.salary, 4572000);
   assert.equal(gap.requiredEmployerCostEstimate, costs.estimatedEmployerCosts);
   assert.equal(cliff.grantEndMonth, project.grantDurationMonths);
+});
+
+test("reserve planner returns zero set-aside and immediate sufficiency for zero liability", () => {
+  const plan = calculateReservePlan({ unfundedLiabilityEstimate: 0 }, null, {
+    monthsRemaining: 6,
+    asOfDate: "2026-10-31"
+  });
+  assert.deepEqual(plan.monthlySetAside, { low: 0, expected: 0, high: 0 });
+  assert.deepEqual(plan.sufficientBy, {
+    low: "2026-10-31",
+    expected: "2026-10-31",
+    high: "2026-10-31"
+  });
+  assert.equal(plan.progress.length, 7);
+  assert.equal(plan.progress[0].percentage.expected, 100);
+});
+
+test("reserve planner marks an already sufficient reserve as sufficient today", () => {
+  const plan = calculateReservePlan(
+    { unfundedLiabilityEstimate: 25000 },
+    { low: 20000, expected: 25000, high: 30000 },
+    {
+      monthsRemaining: 12,
+      startingReserve: 25000,
+      asOfDate: "2026-10-11"
+    }
+  );
+  assert.deepEqual(plan.monthlySetAside, { low: 0, expected: 0, high: 417 });
+  assert.equal(plan.sufficientBy.low, "2026-10-11");
+  assert.equal(plan.sufficientBy.expected, "2026-10-11");
+  assert.equal(plan.sufficientBy.high, "2027-10-11");
+});
+
+test("reserve planner handles one remaining month and caps month-end dates", () => {
+  const plan = calculateReservePlan(
+    { unfundedLiabilityEstimate: 10001 },
+    null,
+    { monthsRemaining: 1, startingReserve: 1, asOfDate: "2026-01-31" }
+  );
+  assert.deepEqual(plan.monthlySetAside, {
+    low: 10000,
+    expected: 10000,
+    high: 10000
+  });
+  assert.deepEqual(plan.sufficientBy, {
+    low: "2026-02-28",
+    expected: "2026-02-28",
+    high: "2026-02-28"
+  });
+  assert.equal(plan.progress.at(-1).balance.expected, 10001);
+});
+
+test("reserve planner leaves an unquantifiable cautious high amount open", () => {
+  const plan = calculateReservePlan(
+    { unfundedLiabilityEstimate: 1000 },
+    { low: 1000, expected: 1200, high: null },
+    {
+      monthsRemaining: 4,
+      startingReserve: 200,
+      asOfDate: "2026-10-11"
+    }
+  );
+  assert.deepEqual(plan.monthlySetAside, {
+    low: 200,
+    expected: 250,
+    high: null
+  });
+  assert.equal(plan.sufficientBy.high, null);
+  assert.equal(plan.progress.at(-1).balance.high, null);
+});
+
+test("Worker Rights Card groups modeled protections without deciding legal eligibility", () => {
+  const project = makeProject(
+    { grantDurationMonths: 12 },
+    {
+      endMonth: 7,
+      headcount: 1,
+      monthlySalary: 20000,
+      contractType: "employee_fixed"
+    }
+  );
+  const calculation = calculateProject(project, rulesData);
+  const card = buildWorkerRightsCard(
+    project,
+    project.roles[0].id,
+    calculation,
+    rulesData
+  );
+  assert.equal(card.lastWorkingMonth, 7);
+  assert.equal(card.grantDurationMonths, 12);
+  assert.ok(
+    card.possibleProtections.some((item) => item.ruleId === "gratuity_accrual")
+  );
+  assert.ok(
+    card.notConfirmedProtections.some(
+      (item) =>
+        item.ruleId === "minimum_wage_check" && item.status === "pending"
+    )
+  );
+  assert.ok(
+    card.possibleProtections.every(
+      (item) => item.status === "needs_verification" && item.lastVerified
+    )
+  );
+  assert.equal(
+    buildWorkerRightsCard(project, "missing", calculation, rulesData),
+    null
+  );
+  assert.equal(
+    buildWorkerRightsCard(project, project.roles[0].id, null, rulesData),
+    null
+  );
+});
+
+test("compares saved scenarios against the first scenario using calculated metrics", () => {
+  const baseline = makeProject(
+    { grantDurationMonths: 12 },
+    {
+      id: "worker",
+      title: "Worker",
+      headcount: 1,
+      monthlySalary: 20000,
+      weeklyHours: 40,
+      regularPayment: true,
+      controlledByOrganization: true,
+      startMonth: 1,
+      endMonth: 12
+    }
+  );
+  const restructured = {
+    ...baseline,
+    roles: [
+      {
+        ...baseline.roles[0],
+        weeklyHours: 10,
+        regularPayment: false,
+        controlledByOrganization: false,
+        endMonth: 5
+      }
+    ]
+  };
+  const result = compareScenarios(
+    [
+      { id: "baseline", name: "Current setup", project: baseline },
+      {
+        id: "restructured",
+        name: "Shorter arrangement",
+        project: restructured
+      }
+    ],
+    withRuleDates(),
+    { asOfDate: "2026-10-11" }
+  );
+
+  assert.equal(result.baselineId, "baseline");
+  assert.equal(result.scenarios[0].delta.trueCost, 0);
+  assert.equal(result.scenarios[0].delta.classificationWarnings, 0);
+  assert.equal(result.scenarios[0].metrics.classificationWarnings, 1);
+  assert.equal(result.scenarios[1].metrics.classificationWarnings, 0);
+  assert.ok(result.scenarios[1].delta.trueCost < 0);
+  assert.ok(result.scenarios[1].delta.unfundedLiability <= 0);
+  assert.equal(result.summary.type, "classification_reduction");
+  assert.equal(result.summary.scenarioId, "restructured");
+  assert.equal(result.summary.classificationWarningsRemoved, 1);
+  assert.equal(
+    result.summary.averageMonthlyCostDifference,
+    result.scenarios[1].delta.averageMonthlyCost
+  );
+});
+
+test("fresh-rule sample NGO keeps the standard calculation snapshot unchanged", () => {
+  const project = addTestSkillCategories(makeSampleProject());
+  const result = calculateProject(
+    project,
+    withFreshMinimumWages(withRuleDates()),
+    { asOfDate: "2026-10-11" }
+  );
+  assert.deepEqual(
+    {
+      salary: result.costs.salary,
+      employerCosts: result.costs.estimatedEmployerCosts,
+      total: result.costs.estimatedTotal,
+      gap: result.gap,
+      cliff: {
+        liability: result.cliff.unfundedLiabilityEstimate,
+        lostCoverageHeadcount: result.cliff.lostCoverageHeadcount,
+        endCost: result.cliff.estimatedEmployerCostAtGrantEnd
+      },
+      hasUncertainty: Object.hasOwn(result, "uncertainty")
+    },
+    {
+      salary: 4572000,
+      employerCosts: 258714,
+      total: 4830714,
+      gap: {
+        gap: 258714,
+        scoreBasisPoints: 536,
+        denominator: 4830714,
+        budgetedStaffCost: 4572000,
+        requiredEmployerCostEstimate: 258714
+      },
+      cliff: {
+        liability: 206064,
+        lostCoverageHeadcount: 5,
+        endCost: 258714
+      },
+      hasUncertainty: false
+    }
+  );
+});
+
+test("cautious cost, gap and grant-cliff ranges are ordered for mixed freshness", () => {
+  const project = makeProject(
+    { grantDurationMonths: 12 },
+    { headcount: 10, monthlySalary: 18000, endMonth: 12 }
+  );
+  const result = calculateProject(
+    project,
+    withRuleDates({ esi_employer: "2025-10-11" }),
+    { asOfDate: "2026-10-11" }
+  );
+  assert.equal(result.uncertainty.mode, "cautious");
+  assert.equal(
+    result.uncertainty.rules.find((rule) => rule.ruleId === "esi_employer")
+      .freshness,
+    "stale"
+  );
+  for (const range of [
+    result.uncertainty.costs.quantified,
+    result.uncertainty.gap.quantified,
+    result.uncertainty.cliff.quantified
+  ]) {
+    assert.ok(range.low <= range.expected);
+    assert.ok(range.expected <= range.high);
+  }
+  assert.equal(
+    result.uncertainty.rules.find((rule) => rule.ruleId === "gratuity_accrual")
+      .freshness,
+    "fresh"
+  );
+  assert.equal(result.uncertainty.costs.high, null);
+  assert.ok(
+    result.uncertainty.unquantifiableRuleIds.includes("minimum_wage_check")
+  );
+});
+
+test("zero drift produces a single-value range", () => {
+  const project = makeProject(
+    { grantDurationMonths: 2 },
+    { headcount: 10, monthlySalary: 18000, endMonth: 2 }
+  );
+  const result = calculateProject(
+    project,
+    withRuleDates(
+      { esi_employer: "2025-10-11" },
+      {
+        esi_employer: {
+          annual_change_low_pct: 0,
+          annual_change_high_pct: 0,
+          basis: "ASSUMPTION - TO VERIFY"
+        }
+      }
+    ),
+    { asOfDate: "2026-10-11" }
+  );
+  assert.equal(
+    result.uncertainty.costs.quantified.low,
+    result.costs.estimatedEmployerCosts
+  );
+  assert.equal(
+    result.uncertainty.costs.quantified.low,
+    result.uncertainty.costs.quantified.expected
+  );
+  assert.equal(
+    result.uncertainty.costs.quantified.expected,
+    result.uncertainty.costs.quantified.high
+  );
+});
+
+test("unverified cost rules remain unquantifiable and have no recommendation", () => {
+  const project = makeProject(
+    { grantDurationMonths: 2 },
+    { headcount: 10, monthlySalary: 18000, endMonth: 2 }
+  );
+  const result = calculateProject(project, rulesData, {
+    asOfDate: "2026-10-11"
+  });
+  assert.ok(result.uncertainty.unquantifiableRuleIds.includes("esi_employer"));
+  assert.equal(result.uncertainty.costs.high, null);
+  assert.equal(result.uncertainty.costs.recommended, null);
+  assert.equal(result.uncertainty.gap.high, null);
+  assert.equal(result.uncertainty.cliff.high, null);
 });

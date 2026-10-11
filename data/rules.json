@@ -1,5 +1,9 @@
 {
   "schema_version": 1,
+  "pack_version": "1.0.0",
+  "pack_date": "2026-10-11",
+  "jurisdiction_scope": "India; state-specific rates where supplied",
+  "checksum": "0db9a0916040f7e63c99f08c73f413068374f8bd34f3860fb2b0f63f7eec2bfa",
   "rules": [
     {
       "id": "epf_employer",
@@ -60,6 +64,13 @@
       "source_section": "TO VERIFY",
       "last_verified": "TO VERIFY",
       "confidence": "low",
+      "effective_from": "TO VERIFY",
+      "volatility": "medium",
+      "drift_assumption": {
+        "annual_change_low_pct": 0,
+        "annual_change_high_pct": 5,
+        "basis": "ASSUMPTION - TO VERIFY"
+      },
       "refer_to_professional_if": "Establishment coverage, employee eligibility, exemptions, wage components, or contribution base are uncertain."
     },
     {
@@ -121,6 +132,13 @@
       "source_section": "TO VERIFY",
       "last_verified": "TO VERIFY",
       "confidence": "low",
+      "effective_from": "TO VERIFY",
+      "volatility": "medium",
+      "drift_assumption": {
+        "annual_change_low_pct": 0,
+        "annual_change_high_pct": 5,
+        "basis": "ASSUMPTION - TO VERIFY"
+      },
       "refer_to_professional_if": "State coverage, establishment coverage, wage definition, or employee eligibility are uncertain."
     },
     {
@@ -182,6 +200,13 @@
       "source_section": "TO VERIFY",
       "last_verified": "TO VERIFY",
       "confidence": "low",
+      "effective_from": "TO VERIFY",
+      "volatility": "low",
+      "drift_assumption": {
+        "annual_change_low_pct": 0,
+        "annual_change_high_pct": 2,
+        "basis": "ASSUMPTION - TO VERIFY"
+      },
       "refer_to_professional_if": "Service continuity, fixed-term eligibility, wage definition or termination entitlement are uncertain."
     },
     {
@@ -231,6 +256,13 @@
       "source_section": "State notification TO VERIFY",
       "last_verified": "TO VERIFY",
       "confidence": "low",
+      "effective_from": "TO VERIFY",
+      "volatility": "high",
+      "drift_assumption": {
+        "annual_change_low_pct": 0,
+        "annual_change_high_pct": 10,
+        "basis": "ASSUMPTION - TO VERIFY"
+      },
       "refer_to_professional_if": "Scheduled employment, skill level, zone, variable dearness allowance or current state notification are uncertain."
     },
     {
@@ -282,6 +314,13 @@
       "source_section": "TO VERIFY",
       "last_verified": "TO VERIFY",
       "confidence": "low",
+      "effective_from": "TO VERIFY",
+      "volatility": "medium",
+      "drift_assumption": {
+        "annual_change_low_pct": 0,
+        "annual_change_high_pct": 5,
+        "basis": "ASSUMPTION - TO VERIFY"
+      },
       "refer_to_professional_if": "Workplace boundaries, employee count, Internal Committee constitution or policy requirements are uncertain."
     },
     {
@@ -340,6 +379,13 @@
       "source_section": "No single test asserted; professional review required",
       "last_verified": "TO VERIFY",
       "confidence": "low",
+      "effective_from": "TO VERIFY",
+      "volatility": "high",
+      "drift_assumption": {
+        "annual_change_low_pct": 0,
+        "annual_change_high_pct": 10,
+        "basis": "ASSUMPTION - TO VERIFY"
+      },
       "refer_to_professional_if": "Contract labels differ from the actual level of control, integration, payment or ongoing service."
     }
   ],
